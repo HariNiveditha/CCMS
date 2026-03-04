@@ -1,0 +1,17 @@
+body{
+    background-color:#b7cbd8;
+    font-family: Arial;
+    margin:0;
+    
+}
+header{
+    background:#2c3e50;
+    color:white;
+    padding:30px;
+    text-align:center;
+}
+nav{
+    background:#34495e;
+    padding:10px;
+    text-align:center;
+}

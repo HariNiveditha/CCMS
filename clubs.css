@@ -1,0 +1,58 @@
+/* ── Clubs Page (clubs.html) ── */
+
+.clubs-container {
+    width: 90%;
+    margin: 30px auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.club-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    text-align: left;
+}
+
+.club-card:hover {
+    transform: scale(1.02);
+}
+
+.club-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.info {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.about {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.event {
+    background: #eef3ff;
+    padding: 8px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 13px;
+}
+
+.apply-btn {
+    background: green;
+    color: white;
+}
+
+.closed-btn {
+    background: gray;
+    color: white;
+    cursor: not-allowed;
+}

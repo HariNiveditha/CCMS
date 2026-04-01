@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="user_dashboard.css">
+</head>
+
+<body>
+
+<script>
+  // 🔐 Protect dashboard
+  if (!localStorage.getItem("isLoggedIn")) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<div class="navbar">
+  <div><b>Club Portal</b></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="clubs.html">Clubs</a>
+    <a href="events.html">Events</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <h2 id="welcomeText">Welcome 👋</h2>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="card">
+      <h3 id="clubCount">0</h3>
+      <p>Clubs Joined</p>
+    </div>
+
+    <div class="card">
+      <h3 id="eventCount">0</h3>
+      <p>Events Registered</p>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div class="section">
+    <h3>Upcoming Events</h3>
+    <div class="list" id="eventsList"></div>
+  </div>
+
+  <!-- Clubs -->
+  <div class="section">
+    <h3>Your Clubs</h3>
+    <div class="list" id="clubsList"></div>
+  </div>
+
+</div>
+
+<script>
+  // Dummy data (replace later with backend)
+  const events = [
+    { name: "Hackathon", date: "April 10" },
+    { name: "Music Fest", date: "April 15" }
+  ];
+
+  const clubs = [
+    { name: "Coding Club" },
+    { name: "Dance Club" }
+  ];
+
+  // Load data
+  function loadDashboard() {
+    const userName = localStorage.getItem("userName") || "User";
+
+    document.getElementById("welcomeText").innerText =
+      "Welcome, " + userName + " 👋";
+
+    document.getElementById("clubCount").innerText = clubs.length;
+    document.getElementById("eventCount").innerText = events.length;
+
+    const eventsList = document.getElementById("eventsList");
+    const clubsList = document.getElementById("clubsList");
+
+    events.forEach(e => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<b>${e.name}</b><br>${e.date}`;
+      eventsList.appendChild(div);
+    });
+
+    clubs.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<b>${c.name}</b>`;
+      clubsList.appendChild(div);
+    });
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+
+  loadDashboard();
+</script>
+
+</body>
+</html>

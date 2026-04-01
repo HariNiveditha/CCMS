@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clubs</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="clubs.css">
+</head>
+
+<body>
+
+<h1>Clubs</h1>
+
+<div class="clubs-container" id="clubsContainer"></div>
+
+<script>
+
+// 🧠 Clubs Data (you can expand this anytime)
+const clubs = [
+  {
+    name: "Coding Club",
+    category: "Technical",
+    members: 120,
+    founded: 2018,
+    about: "We conduct hackathons, coding contests, and workshops.",
+    event: "Web Dev Workshop - March 25",
+    recruitmentOpen: true
+  },
+  {
+    name: "Music Club",
+    category: "Cultural",
+    members: 80,
+    founded: 2016,
+    about: "A place for singers and musicians to perform and grow.",
+    event: "Live Jam Session - April 5",
+    recruitmentOpen: false
+  },
+  {
+    name: "Robotics Club",
+    category: "Technical",
+    members: 60,
+    founded: 2019,
+    about: "We build robots and participate in competitions.",
+    event: "Robotics Bootcamp - April 10",
+    recruitmentOpen: true
+  }
+];
+
+// 🔧 Render Clubs
+const container = document.getElementById("clubsContainer");
+
+clubs.forEach(club => {
+
+  const card = document.createElement("div");
+  card.className = "club-card";
+
+  card.innerHTML = `
+    <div class="club-title">${club.name}</div>
+
+    <div class="info"><b>Category:</b> ${club.category}</div>
+    <div class="info"><b>Members:</b> ${club.members}</div>
+    <div class="info"><b>Founded:</b> ${club.founded}</div>
+
+    <div class="about">${club.about}</div>
+
+    <div class="event"><b>Upcoming:</b> ${club.event}</div>
+
+    ${
+      club.recruitmentOpen
+      ? `<button class="apply-btn" onclick="applyClub('${club.name}')">Apply Now</button>`
+      : `<button class="closed-btn" disabled>Recruitment Closed</button>`
+    }
+  `;
+
+  container.appendChild(card);
+});
+
+// 🔐 Apply Function
+function applyClub(clubName) {
+  const user = localStorage.getItem("user");
+
+  if (!user) {
+    alert("Please login first");
+    window.location.href = "login.html";
+    return;
+  }
+
+  alert("Application submitted for " + clubName);
+}
+
+</script>
+
+</body>
+</html>

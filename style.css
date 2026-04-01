@@ -1,17 +1,117 @@
-body{
-    background-color:#b7cbd8;
-    font-family: Arial;
-    margin:0;
-    
+/* ── Global / Shared Styles ── */
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    text-align: center;
 }
-header{
-    background:#2c3e50;
-    color:white;
-    padding:30px;
-    text-align:center;
+
+.logo {
+    position: absolute;
+    left: 20px;
+    top: 15px;
+    background: #0ff1a6;
+    color: #3c2c50;
+    font-weight: bold;
+    font-size: 22px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-nav{
-    background:#34495e;
-    padding:10px;
-    text-align:center;
+
+header {
+    background-color: #164777;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+nav {
+    background-color: #4a7097;
+    text-align: center;
+    padding: 12px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 15px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #f1c40f;
+}
+
+section {
+    padding: 25px;
+}
+
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+/* ── Form Elements ── */
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="checkbox"] {
+    width: auto;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+#message {
+    text-align: center;
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.remember input {
+    margin-right: 8px;
+}
+
+.remember label {
+    display: inline;
+    margin: 0;
 }

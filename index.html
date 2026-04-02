@@ -14,9 +14,6 @@
     <h1>College Club Management System</h1>
     <nav>
         <a href="index.html">Home</a> |
-        <a href="clubs.html">Clubs</a> |
-        <a href="events.html">Events</a> |
-        <a href="members.html">Members</a> |
         <a href="contact.html">Contact</a> |
 
         <span id="authSection"></span>
@@ -74,8 +71,8 @@
 
     if (localStorage.getItem("isLoggedIn")) {
         authSection.innerHTML = `
-            <a href="user_dashboard.html">Dashboard</a> |
-            <a href="#" onclick="logout()">Logout</a>
+            <a href="user_dashboard.html">Dashboard</a> 
+            <button onclick="logout()">Logout</button>
         `;
     } else {
         authSection.innerHTML = `

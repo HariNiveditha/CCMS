@@ -36,11 +36,11 @@
 
     <!-- Upcoming Events -->
     <h3 class="section-title">📅 Upcoming Events</h3>
-    <div class="events-grid" id="upcomingGrid"></div>
+    <div class="events-grid" id="upcomingGrid"><p>Loading...</p></div>
 
     <!-- Past Events -->
     <h3 class="section-title">🗂️ Past Events</h3>
-    <div class="events-grid past" id="pastGrid"></div>
+    <div class="events-grid past" id="pastGrid"><p>Loading...</p></div>
 
 </div>
 
@@ -49,70 +49,41 @@
 </footer>
 
 <script>
-const events = [
-    {
-        name: "Web Dev Workshop",
-        club: "Coding Club",
-        category: "Technical",
-        date: "April 10, 2026",
-        time: "10:00 AM",
-        venue: "Lab Block 3",
-        description: "Hands-on workshop covering HTML, CSS and JavaScript basics.",
-        seats: 30,
-        registered: 18,
-        status: "upcoming"
-    },
-    {
-        name: "Robotics Bootcamp",
-        club: "Robotics Club",
-        category: "Technical",
-        date: "April 15, 2026",
-        time: "9:00 AM",
-        venue: "Engineering Hall",
-        description: "Build and program your first robot in a day-long bootcamp.",
-        seats: 20,
-        registered: 20,
-        status: "upcoming"
-    },
-    {
-        name: "Live Jam Session",
-        club: "Music Club",
-        category: "Cultural",
-        date: "April 20, 2026",
-        time: "5:00 PM",
-        venue: "Open Air Auditorium",
-        description: "An evening of live music performances by club members.",
-        seats: 100,
-        registered: 45,
-        status: "upcoming"
-    },
-    {
-        name: "Cricket Tournament",
-        club: "Sports Club",
-        category: "Sports",
-        date: "March 15, 2026",
-        time: "8:00 AM",
-        venue: "College Ground",
-        description: "Inter-department cricket tournament. 8 teams participated.",
-        seats: 80,
-        registered: 80,
-        status: "past"
-    },
-    {
-        name: "Hackathon 2026",
-        club: "Coding Club",
-        category: "Technical",
-        date: "March 5, 2026",
-        time: "9:00 AM",
-        venue: "Main Auditorium",
-        description: "24-hour hackathon with over 15 teams competing for prizes.",
-        seats: 60,
-        registered: 60,
-        status: "past"
-    }
-];
 
+const API = 'http://localhost:3000/api';
+let allEvents = [];
 let currentFilter = 'all';
+
+// Fetch events from backend
+async function loadEvents() {
+    try {
+        const res = await fetch(`${API}/events`);
+        const data = await res.json();
+
+        if (!data.success) {
+            showError();
+            return;
+        }
+
+        // Determine upcoming vs past based on date
+        const now = new Date();
+        allEvents = data.data.map(e => ({
+            ...e,
+            status: new Date(e.date) >= now ? 'upcoming' : 'past'
+        }));
+
+        renderEvents(currentFilter);
+
+    } catch (err) {
+        showError();
+        console.error(err);
+    }
+}
+
+function showError() {
+    document.getElementById('upcomingGrid').innerHTML = '<p>Could not load events. Make sure the server is running.</p>';
+    document.getElementById('pastGrid').innerHTML = '';
+}
 
 function renderEvents(filter) {
     const upcomingGrid = document.getElementById('upcomingGrid');
@@ -120,50 +91,44 @@ function renderEvents(filter) {
     upcomingGrid.innerHTML = '';
     pastGrid.innerHTML = '';
 
-    const filtered = filter === 'all' ? events : events.filter(e => e.category === filter);
+    const filtered = filter === 'all' ? allEvents : allEvents.filter(e => e.category === filter);
     const upcoming = filtered.filter(e => e.status === 'upcoming');
     const past = filtered.filter(e => e.status === 'past');
 
     if (upcoming.length === 0) {
-        upcomingGrid.innerHTML = '<p class="no-events">No upcoming events in this category.</p>';
+        upcomingGrid.innerHTML = '<p class="no-events">No upcoming events.</p>';
     } else {
         upcoming.forEach(e => upcomingGrid.appendChild(createCard(e)));
     }
 
     if (past.length === 0) {
-        pastGrid.innerHTML = '<p class="no-events">No past events in this category.</p>';
+        pastGrid.innerHTML = '<p class="no-events">No past events.</p>';
     } else {
         past.forEach(e => pastGrid.appendChild(createCard(e)));
     }
 }
 
 function createCard(e) {
-    const isFull = e.registered >= e.seats;
-    const seatsLeft = e.seats - e.registered;
     const isPast = e.status === 'past';
+    const eventDate = new Date(e.date);
+    const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
     const card = document.createElement('div');
     card.className = 'event-card' + (isPast ? ' past-card' : '');
 
     card.innerHTML = `
-        <div class="event-category-tag">${e.category}</div>
-        <div class="event-name">${e.name}</div>
-        <div class="event-club">🏛️ ${e.club}</div>
+        <div class="event-name">${e.title}</div>
+        <div class="event-club">🏛️ ${e.club_name || 'General'}</div>
         <div class="event-meta">
-            <span>📅 ${e.date}</span>
-            <span>🕐 ${e.time}</span>
-            <span>📍 ${e.venue}</span>
+            <span>📅 ${dateStr}</span>
+            <span>🕐 ${timeStr}</span>
+            <span>📍 ${e.location || 'TBD'}</span>
         </div>
-        <p class="event-desc">${e.description}</p>
-        <div class="seats-bar">
-            <div class="seats-fill" style="width:${(e.registered/e.seats)*100}%"></div>
-        </div>
-        <div class="seats-text">${isPast ? `${e.registered} attended` : isFull ? 'Seats Full' : `${seatsLeft} seats left`}</div>
+        <p class="event-desc">${e.description || ''}</p>
         ${isPast
             ? `<button class="btn-past" disabled>Event Completed</button>`
-            : isFull
-                ? `<button class="btn-full" disabled>Fully Booked</button>`
-                : `<button class="btn-register" onclick="register('${e.name}')">Register Now</button>`
+            : `<button class="btn-register" onclick="register('${e.title}')">Register Now</button>`
         }
     `;
     return card;
@@ -199,7 +164,7 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-renderEvents('all');
+loadEvents();
 </script>
 
 </body>

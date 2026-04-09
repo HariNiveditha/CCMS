@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Admin Dashboard — CCMS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="style.css">
+ <link rel="stylesheet" href="admin_dashboard.css">
+ <script src="admin_dashboard.js"></script>
+</head>
+<body>
+
+<!-- Access denied screen -->
+<div id="authGate" style="display:none;">
+  <h2>Access Denied</h2>
+  <p>You must be a club admin to view this page.</p>
+  <a href="index.html">← Back to Home</a>
+</div>
+
+<div id="appShell" class="shell" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="wordmark">CCMS</div>
+      <div class="sub">Admin Dashboard</div>
+    </div>
+
+    <div class="club-switcher">
+      <label>Active Club</label>
+      <select id="clubSelector" onchange="switchClub()">
+        <!-- populated by JS -->
+      </select>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active" data-page="overview" onclick="navigate('overview')">
+        <span class="icon">▦</span> Overview
+      </div>
+      <div class="nav-item" data-page="members" onclick="navigate('members')">
+        <span class="icon">◉</span> Members
+      </div>
+      <div class="nav-item" data-page="events" onclick="navigate('events')">
+        <span class="icon">◈</span> Events
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="index.html" class="back-link">← Back to Portal</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbarTitle">Overview</span>
+      <div class="topbar-user">
+        <div class="avatar" id="avatarEl">?</div>
+        <span id="usernameEl">—</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW PAGE -->
+      <div class="page active" id="page-overview">
+        <div class="page-title" id="clubNameTitle">Club Overview</div>
+
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <div class="label">Total Members</div>
+            <div class="value" id="statMembers">0</div>
+          </div>
+          <div class="stat-card info">
+            <div class="label">Total Events</div>
+            <div class="value" id="statEvents">0</div>
+          </div>
+          <div class="stat-card success">
+            <div class="label">Upcoming Events</div>
+            <div class="value" id="statUpcoming">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Coordinators</div>
+            <div class="value" id="statCoords">0</div>
+          </div>
+        </div>
+
+        <div class="recruit-banner">
+          <div class="info-block">
+            <div class="title">Recruitment</div>
+            <div class="desc">Toggle to open or close applications for this club.</div>
+          </div>
+          <div class="toggle-pill">
+            <span class="recruit-status" id="recruitStatus">CLOSED</span>
+            <div class="toggle-track" id="toggleTrack" onclick="toggleRecruitment()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS PAGE -->
+      <div class="page" id="page-members">
+        <div class="section-header">
+          <div class="page-title" style="margin-bottom:0;">Members</div>
+          <button class="btn btn-primary" onclick="openModal('addMemberModal')">+ Add Member</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="membersTbody">
+              <tr><td colspan="6" class="empty">No members yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EVENTS PAGE -->
+      <div class="page" id="page-events">
+        <div class="section-header">
+          <div class="page-title" style="margin-bottom:0;">Events</div>
+          <button class="btn btn-primary" onclick="openModal('addEventModal')">+ Create Event</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Registrants</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTbody">
+              <tr><td colspan="7" class="empty">No events yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ── MODALS ── -->
+
+<!-- Add Member Modal -->
+<div class="modal-backdrop" id="addMemberModal">
+  <div class="modal">
+    <h3>Add Member</h3>
+    <label>User ID / Roll Number</label>
+    <input type="text" id="newMemberUserId" placeholder="e.g. 22CS01">
+    <label>Name</label>
+    <input type="text" id="newMemberName" placeholder="Full name">
+    <label>Email</label>
+    <input type="email" id="newMemberEmail" placeholder="student@college.edu">
+    <label>Role</label>
+    <select id="newMemberRole">
+      <option value="volunteer">Volunteer</option>
+      <option value="coordinator">Coordinator</option>
+    </select>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addMemberModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addMember()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Event Modal -->
+<div class="modal-backdrop" id="addEventModal">
+  <div class="modal">
+    <h3>Create Event</h3>
+    <label>Event Title</label>
+    <input type="text" id="newEventTitle" placeholder="e.g. Hackathon 2026">
+    <label>Date & Time</label>
+    <input type="datetime-local" id="newEventDate">
+    <label>Location</label>
+    <input type="text" id="newEventLocation" placeholder="e.g. Seminar Hall B">
+    <label>Category</label>
+    <select id="newEventCategory">
+      <option value="Technical">Technical</option>
+      <option value="Cultural">Cultural</option>
+      <option value="Sports">Sports</option>
+      <option value="Other">Other</option>
+    </select>
+    <label>Description</label>
+    <textarea id="newEventDesc" placeholder="Brief description…"></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addEventModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createEvent()">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Registrants Modal -->
+<div class="modal-backdrop" id="registrantsModal">
+  <div class="modal">
+    <h3 id="registrantsModalTitle">Registrants</h3>
+    <div class="registrant-list" id="registrantsList"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('registrantsModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

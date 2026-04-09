@@ -15,7 +15,6 @@
     <nav>
         <a href="index.html">Home</a> |
         <a href="contact.html">Contact</a> |
-
         <span id="authSection"></span>
     </nav>
 </header>
@@ -29,29 +28,34 @@
 
 <section>
     <h2>Features</h2>
-
     <div class="feature-container">
-
         <div class="feature-card" onclick="goTo('clubs.html')">
             <h3>Clubs</h3>
             <p>Explore all available college clubs.</p>
         </div>
-
         <div class="feature-card" onclick="goTo('events.html')">
             <h3>Events</h3>
             <p>Register and participate in events.</p>
         </div>
-
         <div class="feature-card" onclick="goTo('members.html')">
             <h3>Members</h3>
             <p>Manage club members.</p>
         </div>
-
         <div class="feature-card">
             <h3>Updates</h3>
             <p>Stay updated with announcements.</p>
         </div>
+    </div>
+</section>
 
+<!-- Admin Panel Card — only shown when userRole === 'admin' -->
+<section id="adminSection" style="display:none;">
+    <h2>Admin Panel</h2>
+    <div class="feature-container">
+        <div class="feature-card" style="border: 2px solid #c0392b;" onclick="goTo('admin_dashboard.html')">
+            <h3>⚙️ Admin Dashboard</h3>
+            <p>Manage your clubs, members, events and recruitments.</p>
+        </div>
     </div>
 </section>
 
@@ -67,14 +71,26 @@
 </footer>
 
 <script>
-    const authSection = document.getElementById("authSection");
+    const authSection  = document.getElementById('authSection');
+    const adminSection = document.getElementById('adminSection');
 
-    if (localStorage.getItem("isLoggedIn")) {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const userRole   = localStorage.getItem('userRole');   // "admin" | "user" | null
+
+    if (isLoggedIn) {
+        // ── Logged-in nav ──────────────────────────────────────────────
         authSection.innerHTML = `
-            <a href="user_dashboard.html">Dashboard</a> 
+            <a href="user_dashboard.html">Dashboard</a>
             <button onclick="logout()">Logout</button>
         `;
+
+        // ── Show admin section for admin users ─────────────────────────
+        // Compare with trim() to guard against accidental whitespace
+        if (userRole && userRole.trim().toLowerCase() === 'admin') {
+            adminSection.style.display = 'block';
+        }
     } else {
+        // ── Guest nav ──────────────────────────────────────────────────
         authSection.innerHTML = `
             <a href="login.html">Login</a>
             <a href="signup.html">Sign Up</a>
@@ -83,7 +99,7 @@
 
     function logout() {
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = 'index.html';
     }
 
     function goTo(page) {

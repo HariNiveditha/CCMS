@@ -33,14 +33,26 @@ async function loadClubs() {
             return;
         }
 
+        const userEmail = localStorage.getItem('userEmail');
+
         data.data.forEach(club => {
             const card = document.createElement('div');
             card.className = 'club-card';
 
+            let actionButton = '';
+            if (club.recruitmentOpen) {
+                actionButton = `<button class="apply-btn" onclick="applyClub(${club.id}, '${club.name}', '${userEmail}')">Apply Now</button>`;
+            } else {
+                actionButton = `<button class="apply-btn" style="background: #999; cursor: not-allowed;" disabled>Recruitment Closed</button>`;
+            }
+
             card.innerHTML = `
                 <div class="club-title">${club.name}</div>
                 <div class="about">${club.description || 'No description available.'}</div>
-                <button class="apply-btn" onclick="applyClub('${club.name}')">Apply Now</button>
+                <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    ${club.recruitmentOpen ? '🟢 Recruitment Open' : '🔴 Recruitment Closed'}
+                </div>
+                ${actionButton}
             `;
 
             container.appendChild(card);
@@ -53,14 +65,39 @@ async function loadClubs() {
 }
 
 // Apply Function
-function applyClub(clubName) {
-    const user = localStorage.getItem('user');
-    if (!user) {
+async function applyClub(clubId, clubName, userEmail) {
+    // Check if user is logged in
+    if (!localStorage.getItem('isLoggedIn')) {
         alert('Please login first');
         window.location.href = 'login.html';
         return;
     }
-    alert('Application submitted for ' + clubName);
+
+    if (!userEmail) {
+        alert('Please login again to apply');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API}/clubs/${clubId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('✅ ' + data.message);
+            location.reload(); // Reload to show updated status
+        } else {
+            alert('❌ ' + data.message);
+        }
+    } catch (err) {
+        alert('Error submitting application');
+        console.error(err);
+    }
 }
 
 loadClubs();

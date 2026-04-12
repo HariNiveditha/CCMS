@@ -65,6 +65,9 @@ async function loginUser() {
             const userName = data.name || data.user?.name || '';
             localStorage.setItem('userName', userName);
 
+            const userEmail = data.email || data.user?.email || email;
+            localStorage.setItem('userEmail', userEmail);
+
             // ── Determine role ────────────────────────────────────────
             // Backend should return data.role = "admin" | "user"
             // Also support data.user.role for nested responses

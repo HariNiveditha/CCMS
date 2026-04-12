@@ -17,6 +17,27 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET user's registered events by email
+router.get('/user/registered/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const [registrations] = await db.query(`
+      SELECT e.id, e.title, e.description, e.date, e.location, c.name AS club_name
+      FROM event_registrations er
+      JOIN events e ON er.event_id = e.id
+      LEFT JOIN clubs c ON e.club_id = c.id
+      WHERE er.email = ?
+      ORDER BY e.date ASC
+    `, [email]);
+
+    res.json({ success: true, data: registrations });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
 // GET check if user is registered for an event (must be before /:id)
 router.get('/:id/check-registration', async (req, res) => {
   try {

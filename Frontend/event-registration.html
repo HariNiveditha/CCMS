@@ -215,7 +215,6 @@ function getEventIdFromURL() {
     return params.get('eventId');
 }
 
-// Load event details
 async function loadEventDetails() {
     try {
         eventId = getEventIdFromURL();
@@ -235,7 +234,6 @@ async function loadEventDetails() {
 
         const event = data.data;
 
-        // Populate event summary
         document.getElementById('eventTitle').textContent = event.title;
         const eventDate = new Date(event.date);
         const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -245,7 +243,6 @@ async function loadEventDetails() {
         document.getElementById('eventClub').textContent = event.club_name || 'General';
         document.getElementById('eventDesc').textContent = event.description || 'No description provided';
 
-        // Load user info from localStorage
         const storedUser = localStorage.getItem('userInfo');
         if (storedUser) {
             userInfo = JSON.parse(storedUser);
@@ -255,7 +252,6 @@ async function loadEventDetails() {
             document.getElementById('rollNumber').value = userInfo.roll_number || '';
         }
 
-        // Show form, hide loader
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('registrationForm').style.display = 'block';
 
@@ -265,14 +261,12 @@ async function loadEventDetails() {
     }
 }
 
-// Show error message
 function showError(message) {
     document.getElementById('errorMessage').textContent = message;
     document.getElementById('errorMessage').style.display = 'block';
     document.getElementById('loadingDiv').style.display = 'none';
 }
 
-// Show success message
 function showSuccess(message) {
     document.getElementById('successMessage').textContent = message;
     document.getElementById('successMessage').style.display = 'block';
@@ -281,7 +275,6 @@ function showSuccess(message) {
     }, 2000);
 }
 
-// Submit registration form
 document.getElementById('regForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -325,11 +318,11 @@ document.getElementById('regForm').addEventListener('submit', async (e) => {
             return;
         }
 
-        // Store registered event ID
         let registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
         if (!registeredEvents.includes(eventId)) {
             registeredEvents.push(parseInt(eventId));
-            localStorage.setItem('registeredEvents', JSON.stringify(registeredEvents));
+            localStorage.setItem('registeredEvents', JSON.stringify(registeredEv
+            ents));
         }
 
         regBtn.textContent = '✓ Registered!';
@@ -345,7 +338,6 @@ document.getElementById('regForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Auth nav
 const authSection = document.getElementById('authSection');
 const isLoggedIn = localStorage.getItem('isLoggedIn');
 if (isLoggedIn) {
@@ -363,7 +355,6 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// Load event details on page load
 loadEventDetails();
 
 </script>

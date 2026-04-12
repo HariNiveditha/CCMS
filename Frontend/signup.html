@@ -3,166 +3,234 @@
 <head>
     <title>Sign Up</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="auth.js"></script>
     <style>
-        .signup-container {
-            width: 350px;
-            margin: 80px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            text-align: left;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
- 
+
+        .signup-container {
+            width: 400px;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
         .signup-container h2 {
             text-align: center;
+            color: #164777;
+            margin-bottom: 30px;
+            font-size: 1.6rem;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #1a2a3a;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(22, 71, 119, 0.2);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #164777;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 25px;
+            background: #164777;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #0f2e4a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 71, 119, 0.3);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .error {
+            background: rgba(192, 57, 43, 0.1);
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        .success {
+            background: rgba(26, 122, 74, 0.1);
+            color: #1a7a4a;
+            border: 1px solid #1a7a4a;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #5a7a99;
+        }
+
+        .login-link a {
+            color: #164777;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
 
-<header>
-    <h1>College Club Management System</h1>
-</header>
-
 <div class="signup-container">
+    <h2>Create Account</h2>
 
-<h2>Create Account</h2>
+    <form id="signupForm" onsubmit="return false;">
+        <label>Name <span style="color: #c0392b;">*</span></label>
+        <input type="text" id="name" placeholder="Enter your full name" required>
 
-<form id="signupForm">
+        <label>Email <span style="color: #c0392b;">*</span></label>
+        <input type="email" id="email" placeholder="Enter your email" required>
 
-<label>Name <span style="color:red;">*</span></label>
-<input type="text" id="name" placeholder="Enter your full name" required>
+        <label>Phone Number <span style="color: #c0392b;">*</span></label>
+        <input type="tel" id="phone" placeholder="Enter your phone number" required>
 
-<label>Email <span style="color:red;">*</span></label>
-<input type="email" id="email" placeholder="Enter your email" required>
+        <label>Password <span style="color: #c0392b;">*</span></label>
+        <input type="password" id="password" placeholder="Enter password" required>
 
-<label>Branch <span style="color:red;">*</span></label>
-<select id="branch" required>
-  <option value="">Select Your Branch</option>
-  <option value="Computer Science">Computer Science</option>
-  <option value="Electronics">Electronics</option>
-  <option value="Mechanical">Mechanical</option>
-  <option value="Electrical">Electrical</option>
-  <option value="Civil">Civil</option>
-</select>
+        <label>Confirm Password <span style="color: #c0392b;">*</span></label>
+        <input type="password" id="confirmPassword" placeholder="Confirm password" required>
 
-<label>Academic Year <span style="color:red;">*</span></label>
-<select id="year" required>
-  <option value="">Select Your Year</option>
-  <option value="1st Year">1st Year</option>
-  <option value="2nd Year">2nd Year</option>
-  <option value="3rd Year">3rd Year</option>
-  <option value="4th Year">4th Year</option>
-</select>
+        <button type="button" onclick="signupUser()">Sign Up</button>
 
-<label>Password <span style="color:red;">*</span></label>
-<input type="password" id="password" placeholder="Enter password" required>
+        <div id="message" class="message"></div>
 
-<label>Confirm Password <span style="color:red;">*</span></label>
-<input type="password" id="confirmPassword" placeholder="Confirm password" required>
-
-<button type="button" onclick="signupUser()" style="width: 100%; padding: 12px; background: #164777; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Create Account</button>
-
-<p style="text-align: center; margin-top: 15px;">
-  Already have an account? <a href="login.html" style="color: #164777; font-weight: bold;">Login here</a>
-</p>
-
-<div id="errorMsg" style="color: red; margin-top: 10px; display:none;"></div>
-
-</form>
-
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </form>
 </div>
+
 <script>
 async function signupUser() {
-  const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const branch = document.getElementById('branch').value;
-  const year = document.getElementById('year').value;
-  const password = document.getElementById('password').value.trim();
-  const confirmPassword = document.getElementById('confirmPassword').value.trim();
-  const errorMsg = document.getElementById('errorMsg');
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const confirmPassword = document.getElementById('confirmPassword').value.trim();
+    const messageEl = document.getElementById('message');
 
-  // Validation
-  if (!name || !email || !branch || !year || !password || !confirmPassword) {
-    errorMsg.textContent = '❌ Please fill in all required fields';
-    errorMsg.style.display = 'block';
-    return;
-  }
+    // Clear previous message
+    messageEl.style.display = 'none';
+    messageEl.className = 'message';
 
-  if (password !== confirmPassword) {
-    errorMsg.textContent = '❌ Passwords do not match';
-    errorMsg.style.display = 'block';
-    return;
-  }
+    // Validation
+    if (!name || !email || !phone || !password || !confirmPassword) {
+        messageEl.textContent = '❌ Please fill in all fields';
+        messageEl.className = 'message error';
+        messageEl.style.display = 'block';
+        return;
+    }
 
-  if (password.length < 6) {
-    errorMsg.textContent = '❌ Password must be at least 6 characters';
-    errorMsg.style.display = 'block';
-    return;
-  }
+    if (password !== confirmPassword) {
+        messageEl.textContent = '❌ Passwords do not match';
+        messageEl.className = 'message error';
+        messageEl.style.display = 'block';
+        return;
+    }
 
-  try {
-    const response = await fetch('http://localhost:3000/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-        branch,
-        year,
-        role: 'student'
-      })
-    });
+    if (password.length < 6) {
+        messageEl.textContent = '❌ Password must be at least 6 characters';
+        messageEl.className = 'message error';
+        messageEl.style.display = 'block';
+        return;
+    }
 
-    const data = await response.json();
+    if (!/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
+        messageEl.textContent = '❌ Please enter a valid phone number';
+        messageEl.className = 'message error';
+        messageEl.style.display = 'block';
+        return;
+    }
 
-    if (response.ok && data.success) {
-      // Save to localStorage
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userId', String(data.userId || ''));
-      localStorage.setItem('userName', name);
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userRole', 'student');
-      
-      // Save via CCMSAuth if available
-      if (window.CCMSAuth && CCMSAuth.saveUser) {
-        CCMSAuth.saveUser({
-          id: data.userId,
-          role: 'student',
-          name: name,
-          email: email
+    try {
+        messageEl.textContent = '⏳ Creating account...';
+        messageEl.className = 'message success';
+        messageEl.style.display = 'block';
+
+        const response = await fetch('http://localhost:3000/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                email,
+                password,
+                phone,
+                role: 'student'
+            })
         });
-      }
 
-      // Redirect to profile setup page (Phase 2)
-      alert('✅ Account created successfully! Now let\'s complete your profile.');
-      window.location.href = 'user_profile_setup.html';
-      
-    } else {
-      errorMsg.textContent = '❌ ' + (data.message || 'Signup failed. Try again.');
-      errorMsg.style.display = 'block';
-    }
+        const data = await response.json();
 
-  } catch (error) {
-    console.error('Signup error:', error);
-    errorMsg.textContent = '❌ Connection error. Please try again.';
-    errorMsg.style.display = 'block';
-  }
-}
-</script>
-      }
-      window.location.href = 'user_dashboard.html';
-    } else {
-      alert(data.message); // show error e.g. "Email already exists"
+        if (response.ok && data.success) {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userId', String(data.userId || ''));
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userRole', 'student');
+
+            messageEl.textContent = '✅ Account created successfully! Redirecting...';
+            messageEl.className = 'message success';
+            
+            setTimeout(() => {
+                window.location.href = 'user_dashboard.html';
+            }, 1500);
+        } else {
+            messageEl.textContent = '❌ ' + (data.message || 'Signup failed. Try again.');
+            messageEl.className = 'message error';
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        messageEl.textContent = '❌ Connection error. Make sure server is running.';
+        messageEl.className = 'message error';
     }
-  } catch (error) {
-    alert('Could not connect to server. Make sure it is running.');
-  }
 }
 </script>
 

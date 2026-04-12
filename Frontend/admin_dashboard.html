@@ -13,19 +13,7 @@
 
 <!-- Access denied screen -->
 <div id="authGate" style="display:none;">
-  <h2>Access Denied</h2>id	int	NO	PRI		auto_increment
-roll_number	varchar(15)	YES	UNI		
-name	varchar(100)	NO			
-email	varchar(100)	NO	UNI		
-phone	varchar(15)	YES			
-password	varchar(255)	NO			
-created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
-role	varchar(20)	YES		student	
-branch	varchar(100)	YES			
-year	varchar(20)	YES			
-profile_completed	tinyint(1)	YES		0	
-membership_status	enum('Active','Inactive','Suspended')	YES		Active	
-updated_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+  <h2>Access Denied</h2>
   <p>You must be a club admin to view this page.</p>
   <p><a href="user_dashboard.html">Go to your dashboard</a> · <a href="index.html">← Back to Home</a></p>
 </div>

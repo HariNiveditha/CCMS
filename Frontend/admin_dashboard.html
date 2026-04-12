@@ -6,15 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <link rel="stylesheet" href="style.css">
  <link rel="stylesheet" href="admin_dashboard.css">
+ <script src="auth.js"></script>
  <script src="admin_dashboard.js"></script>
 </head>
 <body>
 
 <!-- Access denied screen -->
 <div id="authGate" style="display:none;">
-  <h2>Access Denied</h2>
+  <h2>Access Denied</h2>id	int	NO	PRI		auto_increment
+roll_number	varchar(15)	YES	UNI		
+name	varchar(100)	NO			
+email	varchar(100)	NO	UNI		
+phone	varchar(15)	YES			
+password	varchar(255)	NO			
+created_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+role	varchar(20)	YES		student	
+branch	varchar(100)	YES			
+year	varchar(20)	YES			
+profile_completed	tinyint(1)	YES		0	
+membership_status	enum('Active','Inactive','Suspended')	YES		Active	
+updated_at	timestamp	YES		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
   <p>You must be a club admin to view this page.</p>
-  <a href="index.html">← Back to Home</a>
+  <p><a href="user_dashboard.html">Go to your dashboard</a> · <a href="index.html">← Back to Home</a></p>
 </div>
 
 <div id="appShell" class="shell" style="display:none;">
@@ -42,6 +55,10 @@
       </div>
       <div class="nav-item" data-page="events" onclick="navigate('events')">
         <span class="icon">◈</span> Events
+      </div>
+      <div class="nav-item" data-page="requests" onclick="navigate('requests')" id="navRequests">
+        <span class="icon">📩</span> Requests
+        <span class="req-badge" id="reqBadge" style="display:none;"></span>
       </div>
     </nav>
 
@@ -151,6 +168,21 @@
         </div>
       </div>
 
+      <!-- REQUESTS PAGE -->
+      <div class="page" id="page-requests">
+        <div class="page-title">Join Requests</div>
+
+        <!-- Filter tabs -->
+        <div class="req-filter-tabs" id="reqFilterTabs">
+          <button class="req-tab active" data-filter="pending"  onclick="filterRequests('pending')">Pending</button>
+          <button class="req-tab"        data-filter="approved" onclick="filterRequests('approved')">Approved</button>
+          <button class="req-tab"        data-filter="rejected" onclick="filterRequests('rejected')">Rejected</button>
+          <button class="req-tab"        data-filter="all"      onclick="filterRequests('all')">All</button>
+        </div>
+
+        <div id="requestsList"></div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /shell -->
@@ -160,21 +192,26 @@
 <!-- Add Member Modal -->
 <div class="modal-backdrop" id="addMemberModal">
   <div class="modal">
-    <h3>Add Member</h3>
-    <label>User ID / Roll Number</label>
-    <input type="text" id="newMemberUserId" placeholder="e.g. 22CS01">
-    <label>Name</label>
-    <input type="text" id="newMemberName" placeholder="Full name">
-    <label>Email</label>
-    <input type="email" id="newMemberEmail" placeholder="student@college.edu">
+    <h3>Add Member to Club</h3>
+    <label>Select User</label>
+    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+      <input type="text" id="memberSearchInput" placeholder="Search by name or email..." style="flex: 1; padding: 8px;">
+      <button class="btn btn-secondary" onclick="loadAvailableUsers()" style="padding: 8px 15px;">Refresh</button>
+    </div>
+    <div id="availableUsersList" style="border: 1px solid #ddd; border-radius: 4px; max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+      <div style="padding: 20px; text-align: center; color: #999;">Loading users...</div>
+    </div>
+    <input type="hidden" id="selectedUserId" value="">
+    <input type="text" id="selectedUserDisplay" placeholder="No user selected" readonly style="margin-bottom: 15px; padding: 8px; background: #f5f5f5;">
+    
     <label>Role</label>
-    <select id="newMemberRole">
-      <option value="volunteer">Volunteer</option>
+    <select id="newMemberRole" style="margin-bottom: 15px; padding: 8px; width: 100%;">
+      <option value="member">Member</option>
       <option value="coordinator">Coordinator</option>
     </select>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('addMemberModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="addMember()">Add Member</button>
+      <button class="btn btn-primary" onclick="addMemberFromUser()">Add Member</button>
     </div>
   </div>
 </div>

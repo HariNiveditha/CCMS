@@ -4,6 +4,7 @@
     <title>Sign Up</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
+    <script src="auth.js"></script>
     <style>
         .signup-container {
             width: 350px;
@@ -31,57 +32,130 @@
 
 <h2>Create Account</h2>
 
-<form>
+<form id="signupForm">
 
-<label>Roll Number</label>
-<input type="text" id="roll_number" required>
+<label>Name <span style="color:red;">*</span></label>
+<input type="text" id="name" placeholder="Enter your full name" required>
 
-<label>Name</label>
-<input type="text" id="name" required>
+<label>Email <span style="color:red;">*</span></label>
+<input type="email" id="email" placeholder="Enter your email" required>
 
-<label>Email</label>
-<input type="email" id="email" required>
+<label>Branch <span style="color:red;">*</span></label>
+<select id="branch" required>
+  <option value="">Select Your Branch</option>
+  <option value="Computer Science">Computer Science</option>
+  <option value="Electronics">Electronics</option>
+  <option value="Mechanical">Mechanical</option>
+  <option value="Electrical">Electrical</option>
+  <option value="Civil">Civil</option>
+</select>
 
-<label>Phone</label>
-<input type="tel" id="phone" required>
+<label>Academic Year <span style="color:red;">*</span></label>
+<select id="year" required>
+  <option value="">Select Your Year</option>
+  <option value="1st Year">1st Year</option>
+  <option value="2nd Year">2nd Year</option>
+  <option value="3rd Year">3rd Year</option>
+  <option value="4th Year">4th Year</option>
+</select>
 
-<label>Password</label>
-<input type="password" id="password" required>
+<label>Password <span style="color:red;">*</span></label>
+<input type="password" id="password" placeholder="Enter password" required>
 
-<div class="remember">
-<input type="checkbox" id="remember">
-<label for="remember">Remember Me</label>
-</div>
+<label>Confirm Password <span style="color:red;">*</span></label>
+<input type="password" id="confirmPassword" placeholder="Confirm password" required>
 
-<button type="button" onclick="signupUser()">Sign Up</button>
+<button type="button" onclick="signupUser()" style="width: 100%; padding: 12px; background: #164777; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Create Account</button>
+
+<p style="text-align: center; margin-top: 15px;">
+  Already have an account? <a href="login.html" style="color: #164777; font-weight: bold;">Login here</a>
+</p>
+
+<div id="errorMsg" style="color: red; margin-top: 10px; display:none;"></div>
 
 </form>
 
 </div>
 <script>
 async function signupUser() {
-  const roll_number = document.getElementById('roll_number').value.trim();
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  const phone = document.getElementById('phone').value.trim();
+  const branch = document.getElementById('branch').value;
+  const year = document.getElementById('year').value;
   const password = document.getElementById('password').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+  const errorMsg = document.getElementById('errorMsg');
 
-  if (!roll_number || !name || !email || !phone || !password) {
-    alert('Please fill in all fields');
+  // Validation
+  if (!name || !email || !branch || !year || !password || !confirmPassword) {
+    errorMsg.textContent = '❌ Please fill in all required fields';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    errorMsg.textContent = '❌ Passwords do not match';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  if (password.length < 6) {
+    errorMsg.textContent = '❌ Password must be at least 6 characters';
+    errorMsg.style.display = 'block';
     return;
   }
 
   try {
-    const response = await fetch('http://localhost:3000/api/auth/signup', {
+    const response = await fetch('http://localhost:3000/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roll_number, name, email, phone, password })
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        branch,
+        year,
+        role: 'student'
+      })
     });
 
     const data = await response.json();
 
-    if (response.ok) {
+    if (response.ok && data.success) {
+      // Save to localStorage
       localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userId', String(data.userId || ''));
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userRole', 'student');
+      
+      // Save via CCMSAuth if available
+      if (window.CCMSAuth && CCMSAuth.saveUser) {
+        CCMSAuth.saveUser({
+          id: data.userId,
+          role: 'student',
+          name: name,
+          email: email
+        });
+      }
+
+      // Redirect to profile setup page (Phase 2)
+      alert('✅ Account created successfully! Now let\'s complete your profile.');
+      window.location.href = 'user_profile_setup.html';
+      
+    } else {
+      errorMsg.textContent = '❌ ' + (data.message || 'Signup failed. Try again.');
+      errorMsg.style.display = 'block';
+    }
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    errorMsg.textContent = '❌ Connection error. Please try again.';
+    errorMsg.style.display = 'block';
+  }
+}
+</script>
+      }
       window.location.href = 'user_dashboard.html';
     } else {
       alert(data.message); // show error e.g. "Email already exists"

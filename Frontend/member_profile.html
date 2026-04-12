@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Member Profile — CCMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="member_profile.css">
+  <script src="auth.js"></script>
+  <script src="member_profile.js"></script>
+</head>
+<body>
+
+<!-- Access denied screen (for non-admin users) -->
+<div id="authGate" style="display:none;">
+  <h2>Access Denied</h2>
+  <p>Only club admins can view member profiles.</p>
+  <p><a href="user_dashboard.html">Go to your dashboard</a> · <a href="index.html">← Back to Home</a></p>
+</div>
+
+<!-- Main content area -->
+<div id="appShell" style="display:none;">
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <a href="admin_dashboard.html" class="back-link">← Back to Admin</a>
+      <span class="breadcrumb">Member Profile</span>
+    </div>
+    <div class="navbar-right">
+      <button class="btn-logout" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+    <!-- Loading State -->
+    <div id="loadingState" class="loading">
+      <div class="spinner"></div>
+      <p>Loading member details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" style="display:none;" class="error-card">
+      <h3>Failed to Load Profile</h3>
+      <p id="errorMessage"></p>
+      <a href="admin_dashboard.html" class="btn btn-primary">Go Back</a>
+    </div>
+
+    <!-- Profile Content -->
+    <div id="profileContent" style="display:none;">
+      <!-- Profile Header Card -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="avatar">
+            <span id="avatarInitials"></span>
+          </div>
+          <div class="header-info">
+            <h1 id="memberName"></h1>
+            <p id="memberRole" class="role-badge"></p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="editBtn">✎ Edit Profile</button>
+            <button class="btn btn-secondary" id="closeEditBtn" style="display:none;">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Details Section -->
+      <div class="details-section">
+        <div class="section-header">
+          <h2>Personal Information</h2>
+        </div>
+
+        <!-- Display Mode -->
+        <div id="displayMode" class="details-grid">
+          <div class="detail-item">
+            <label>Email</label>
+            <p id="memberEmail"></p>
+          </div>
+          <div class="detail-item">
+            <label>Phone Number</label>
+            <p id="memberPhone"></p>
+          </div>
+          <div class="detail-item">
+            <label>Branch</label>
+            <p id="memberBranch"></p>
+          </div>
+          <div class="detail-item">
+            <label>Academic Year</label>
+            <p id="memberYear"></p>
+          </div>
+          <div class="detail-item">
+            <label>Club</label>
+            <p id="memberClub"></p>
+          </div>
+          <div class="detail-item">
+            <label>Join Date</label>
+            <p id="memberJoinDate"></p>
+          </div>
+        </div>
+
+        <!-- Edit Mode (Hidden by default) -->
+        <div id="editMode" style="display:none;" class="edit-form">
+          <div class="form-group">
+            <label for="editName">Full Name</label>
+            <input type="text" id="editName" placeholder="Enter full name">
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" placeholder="Enter email" readonly disabled>
+            <small>Email cannot be changed</small>
+          </div>
+          <div class="form-group">
+            <label for="editPhone">Phone Number</label>
+            <input type="tel" id="editPhone" placeholder="Enter phone number">
+          </div>
+          <div class="form-group">
+            <label for="editBranch">Branch</label>
+            <select id="editBranch">
+              <option value="">Select Branch</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Civil">Civil</option>
+              <option value="Chemical">Chemical</option>
+              <option value="Biotechnology">Biotechnology</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editYear">Academic Year</label>
+            <select id="editYear">
+              <option value="">Select Year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-success" id="saveBtn">✓ Save Changes</button>
+            <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Info Section -->
+      <div class="info-section">
+        <div class="section-header">
+          <h2>Additional Information</h2>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>Membership Status</h3>
+            <p id="membershipStatus" class="badge badge-active">Active</p>
+          </div>
+          <div class="info-card">
+            <h3>Account Created</h3>
+            <p id="accountCreated"></p>
+          </div>
+          <div class="info-card">
+            <h3>Last Updated</h3>
+            <p id="lastUpdated"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member Actions -->
+      <div class="actions-section">
+        <h3>Member Actions</h3>
+        <div class="action-buttons">
+          <button class="btn btn-danger" id="removeBtn">Remove from Club</button>
+          <button class="btn btn-secondary" id="backBtn">Go Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -16,14 +16,25 @@ let eventIdSeq  = 1;
 window.addEventListener('DOMContentLoaded', () => {
 
   // ── Auth gate ─────────────────────────────────────────────────────────
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  const userRole   = localStorage.getItem('userRole');
-  const userName   = localStorage.getItem('userName') || 'Admin';
+  const isLoggedIn = window.CCMSAuth
+    ? CCMSAuth.isLoggedIn()
+    : localStorage.getItem('isLoggedIn') === 'true';
+  const isAdmin = window.CCMSAuth
+    ? CCMSAuth.isAdmin()
+    : (localStorage.getItem('userRole') || '').trim().toLowerCase() === 'admin';
+  const sessionUser = window.CCMSAuth ? CCMSAuth.getUser() : null;
+  const userName =
+    (sessionUser && sessionUser.name) ||
+    localStorage.getItem('userName') ||
+    'Admin';
 
-  // Accept "admin" regardless of surrounding whitespace or casing
-  const isAdmin = isLoggedIn && userRole && userRole.trim().toLowerCase() === 'admin';
+  if (!isLoggedIn) {
+    window.location.href = 'login.html';
+    return;
+  }
 
   if (!isAdmin) {
+
     document.getElementById('authGate').style.display = 'flex';
     return;
   }
@@ -43,71 +54,79 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Load clubs ────────────────────────────────────────────────────────
-  loadAdminClubs(userName);
+  loadAdminClubs();
+  loadJoinRequests();
 });
 
 // ══════════════════════════════════════════════
 //  DATA LAYER
 // ══════════════════════════════════════════════
-function loadAdminClubs(userName) {
-  const stored = localStorage.getItem('adminClubs');
+async function loadAdminClubs() {
+  try {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      console.error('No user ID found');
+      window.location.href = 'login.html';
+      return;
+    }
 
-  if (stored) {
-    adminClubs = JSON.parse(stored);
-    // Restore ID sequences so new records don't collide
-    adminClubs.forEach(club => {
-      club.members.forEach(m => { if (m.id >= memberIdSeq) memberIdSeq = m.id + 1; });
-      club.events .forEach(e => { if (e.id >= eventIdSeq)  eventIdSeq  = e.id + 1; });
-    });
-  } else {
-    // ── Demo seed — shown when no backend data has been stored yet ─────
-    adminClubs = [
-      {
-        id: 1,
-        name: 'HICON',
-        recruitmentOpen: false,
-        members: [
-          { id: memberIdSeq++, userId: '22CS01', name: 'Arjun Sharma', email: 'arjun@college.edu', role: 'coordinator', joined: '2025-08-01' },
-          { id: memberIdSeq++, userId: '22CS02', name: 'Priya Nair',   email: 'priya@college.edu', role: 'volunteer',   joined: '2025-09-10' },
-        ],
-        events: [
-          {
-            id: eventIdSeq++, title: 'Hackathon 2026',
-            date: '2026-04-15T09:00', location: 'Seminar Hall B',
-            category: 'Technical', description: '24-hour coding challenge.',
-            registrants: [
-              { name: 'Ravi Kumar',  rollNo: '22CS05', email: 'ravi@college.edu' },
-              { name: 'Sneha Gupta', rollNo: '22CS08', email: 'sneha@college.edu' },
-            ]
-          }
-        ]
-      },
-      {
-        id: 2,
-        name: 'Chaitanya Geethi',
-        recruitmentOpen: true,
-        members: [
-          { id: memberIdSeq++, userId: '22AR01', name: 'Meera Iyer', email: 'meera@college.edu', role: 'coordinator', joined: '2025-07-20' },
-        ],
-        events: []
-      },
-      {
-        id: 3,
-        name: 'Chaitanya Kreeda',
-        recruitmentOpen: false,
-        members: [],
-        events: []
-      }
-    ];
-    persist();
+    // Fetch clubs managed by this admin from the database
+    const response = await fetch(`http://localhost:3000/api/clubs/admin/${userId}`);
+    const data = await response.json();
+
+    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+      console.warn('No clubs assigned to this admin');
+      window.location.href = 'clubs.html';
+      return;
+    }
+
+    // Normalize shape
+    adminClubs = data.data.map(c => ({
+      id: c.id,
+      name: c.name,
+      description: c.description || '',
+      admin_id: c.admin_id,
+      recruitmentOpen: Boolean(c.recruitmentOpen),
+      members: [],
+      events: Array.isArray(c.events) ? c.events : []
+    }));
+
+    populateClubSelector();
+    await loadClubMembers();
+    renderCurrentClub();
+  } catch (err) {
+    console.error('Error loading clubs:', err);
+    alert('Error loading clubs. Please try again.');
   }
-
-  populateClubSelector();
-  renderCurrentClub();
 }
 
-function persist() {
-  localStorage.setItem('adminClubs', JSON.stringify(adminClubs));
+// Load members for the current club from the database
+async function loadClubMembers() {
+  const club = currentClub();
+  if (!club) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/members`);
+    const data = await response.json();
+
+    if (data.success && Array.isArray(data.data)) {
+      club.members = data.data.map(m => ({
+        id: m.id,
+        userId: m.user_id,
+        name: m.name,
+        email: m.email,
+        branch: m.branch,
+        year: m.year,
+        phone: m.phone,
+        rollNumber: m.roll_number,
+        role: m.role,
+        status: m.status,
+        joined: m.joined_date ? new Date(m.joined_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+      }));
+    }
+  } catch (err) {
+    console.error('Error loading members:', err);
+  }
 }
 
 function currentClub() {
@@ -128,6 +147,8 @@ function populateClubSelector() {
 function switchClub() {
   currentClubIndex = parseInt(document.getElementById('clubSelector').value, 10);
   renderCurrentClub();
+  // Refresh members when switching clubs
+  loadClubMembers();
 }
 
 // ══════════════════════════════════════════════
@@ -138,8 +159,9 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelector(`[data-page="${page}"]`).classList.add('active');
-  const titles = { overview: 'Overview', members: 'Members', events: 'Events' };
+  const titles = { overview: 'Overview', members: 'Members', events: 'Events', requests: 'Join Requests' };
   document.getElementById('topbarTitle').textContent = titles[page] || page;
+  if (page === 'requests') renderRequests();
 }
 
 // ══════════════════════════════════════════════
@@ -187,7 +209,7 @@ function toggleRecruitment() {
 // ── Members ───────────────────────────────────
 function renderMembers() {
   const tbody   = document.getElementById('membersTbody');
-  const members = currentClub().members;
+  const members = currentClub().members || [];
 
   if (!members.length) {
     tbody.innerHTML = `<tr><td colspan="6" class="empty">No members yet. Add one above.</td></tr>`;
@@ -202,55 +224,302 @@ function renderMembers() {
           <div class="r-avatar">${m.name.slice(0, 2).toUpperCase()}</div>
           <div>
             <div style="font-weight:600;">${m.name}</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);font-family:'DM Mono',monospace;">${m.userId}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);font-family:'DM Mono',monospace;">${m.email}</div>
           </div>
         </div>
       </td>
       <td style="color:var(--text-muted);font-size:0.82rem;">${m.email}</td>
       <td>
-        <span class="badge ${m.role === 'coordinator' ? 'badge-yellow' : 'badge-blue'}">
-          ${m.role}
-        </span>
+        <span class="badge ${m.role === 'coordinator' ? 'badge-yellow' : 'badge-blue'}">${m.role}</span>
       </td>
       <td style="color:var(--text-muted);font-size:0.82rem;font-family:'DM Mono',monospace;">${m.joined}</td>
       <td>
-        <button class="btn btn-danger btn-sm" onclick="removeMember(${m.id})">Remove</button>
+        <button class="btn btn-info btn-sm" onclick="viewMemberProfile(${m.userId})" style="margin-right:0.5rem;">View</button>
+        <button class="btn btn-danger btn-sm" onclick="removeMember(${m.id}, ${m.userId})">Remove</button>
       </td>
     </tr>
   `).join('');
 }
 
-function addMember() {
-  const userId = document.getElementById('newMemberUserId').value.trim();
-  const name   = document.getElementById('newMemberName').value.trim();
-  const email  = document.getElementById('newMemberEmail').value.trim();
-  const role   = document.getElementById('newMemberRole').value;
+// Load available users (registered users not yet in this club)
+async function loadAvailableUsers() {
+  const club = currentClub();
+  if (!club) return;
 
-  if (!userId || !name || !email) { alert('Please fill all fields.'); return; }
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/available-users`);
+    const data = await response.json();
 
-  currentClub().members.push({
-    id: memberIdSeq++, userId, name, email, role,
-    joined: new Date().toISOString().slice(0, 10)
-  });
-  persist();
-
-  ['newMemberUserId', 'newMemberName', 'newMemberEmail'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('newMemberRole').value = 'volunteer';
-
-  closeModal('addMemberModal');
-  renderMembers();
-  renderOverview();
+    if (data.success && Array.isArray(data.data)) {
+      displayAvailableUsers(data.data);
+    }
+  } catch (err) {
+    console.error('Error loading available users:', err);
+    document.getElementById('availableUsersList').innerHTML = `<div style="padding: 20px; text-align: center; color: #d32f2f;">Error loading users</div>`;
+  }
 }
 
-function removeMember(id) {
-  if (!confirm('Remove this member from the club?')) return;
+// Display available users in the list
+function displayAvailableUsers(users) {
+  const container = document.getElementById('availableUsersList');
+  const searchTerm = document.getElementById('memberSearchInput').value.trim().toLowerCase();
+
+  // Filter by search term
+  const filtered = users.filter(u => 
+    u.name.toLowerCase().includes(searchTerm) || 
+    u.email.toLowerCase().includes(searchTerm)
+  );
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="padding: 20px; text-align: center; color: #999;">No users found</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(u => `
+    <div onclick="selectUser(${u.id}, '${u.name}', '${u.email}')" 
+         style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer;">
+      <div style="font-weight: 600; color: #333;">${u.name}</div>
+      <div style="font-size: 0.85rem; color: #999;">${u.email}</div>
+      <div style="font-size: 0.75rem; color: #bbb;">${u.branch} • ${u.year}</div>
+    </div>
+  `).join('');
+}
+
+// Select a user to add
+function selectUser(userId, name, email) {
+  document.getElementById('selectedUserId').value = userId;
+  document.getElementById('selectedUserDisplay').value = `${name} (${email})`;
+}
+
+// Add selected member to club (API-based)
+async function addMemberFromUser() {
   const club = currentClub();
-  club.members = club.members.filter(m => m.id !== id);
-  persist();
-  renderMembers();
-  renderOverview();
+  const userId = parseInt(document.getElementById('selectedUserId').value, 10);
+  const role = document.getElementById('newMemberRole').value;
+
+  if (!userId) {
+    alert('Please select a user.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/add-member`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, role })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Member added successfully!');
+      document.getElementById('selectedUserId').value = '';
+      document.getElementById('selectedUserDisplay').value = '';
+      document.getElementById('memberSearchInput').value = '';
+      closeModal('addMemberModal');
+      
+      // Reload members and re-render
+      await loadClubMembers();
+      renderMembers();
+      renderOverview();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to add member'));
+    }
+  } catch (err) {
+    console.error('Error adding member:', err);
+    alert('Error adding member. Please try again.');
+  }
+}
+
+// Remove member from club (API-based)
+async function removeMember(memberId, userId) {
+  if (!confirm('Remove this member from the club?')) return;
+  
+  const club = currentClub();
+  
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/members/${userId}`, {
+      method: 'DELETE'
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Member removed successfully!');
+      await loadClubMembers();
+      renderMembers();
+      renderOverview();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to remove member'));
+    }
+  } catch (err) {
+    console.error('Error removing member:', err);
+    alert('Error removing member. Please try again.');
+  }
+}
+
+function viewMemberProfile(userId) {
+  window.location.href = `member_profile.html?id=${userId}`;
+}
+
+// ══════════════════════════════════════════════
+//  JOIN REQUESTS
+// ══════════════════════════════════════════════
+let allRequests  = [];    // from database
+let activeFilter = 'pending';
+
+async function loadJoinRequests() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/requests/admin/${userId}`);
+    const data = await response.json();
+
+    if (data.success && Array.isArray(data.data)) {
+      allRequests = data.data;
+      updateRequestBadge();
+    }
+  } catch (err) {
+    console.error('Error loading join requests:', err);
+  }
+}
+
+function updateRequestBadge() {
+  // Count pending requests
+  const pending = allRequests.filter(r => r.status === 'pending').length;
+
+  const badge = document.getElementById('reqBadge');
+  if (!badge) return;
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function filterRequests(filter) {
+  activeFilter = filter;
+  document.querySelectorAll('.req-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.filter === filter);
+  });
+  renderRequests();
+}
+
+function renderRequests() {
+  const list = document.getElementById('requestsList');
+  const myClubIds = adminClubs.map(c => c.id);
+
+  // Filter requests for this admin's clubs
+  let filtered = allRequests.filter(r => myClubIds.includes(r.club_id));
+
+  if (activeFilter !== 'all') {
+    filtered = filtered.filter(r => r.status === activeFilter);
+  }
+
+  // Newest first
+  filtered.sort((a, b) => new Date(b.requested_at) - new Date(a.requested_at));
+
+  if (!filtered.length) {
+    const labels = { pending: 'No pending requests', accepted: 'No accepted requests', rejected: 'No rejected requests', all: 'No requests yet' };
+    list.innerHTML = `
+      <div class="req-empty">
+        <div style="font-size:2rem;">📭</div>
+        <p>${labels[activeFilter] || 'No requests found'}</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => {
+    const initials = r.user_name.slice(0,2).toUpperCase();
+    const date = new Date(r.requested_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const isPending = r.status === 'pending';
+
+    const statusBadge = {
+      pending:  `<span class="badge badge-yellow">Pending</span>`,
+      accepted: `<span class="badge badge-green">Accepted</span>`,
+      rejected: `<span class="badge badge-red">Rejected</span>`
+    }[r.status] || '';
+
+    const actions = isPending ? `
+      <button class="btn btn-success btn-sm" onclick="approveRequest(${r.id})">✓ Approve</button>
+      <button class="btn btn-danger  btn-sm" onclick="rejectRequest(${r.id})">✕ Reject</button>
+    ` : `<span style="font-size:0.75rem;color:var(--text-muted);">No actions</span>`;
+
+    return `
+      <div class="req-card" id="reqCard-${r.id}">
+        <div class="req-card-left">
+          <div class="req-avatar">${initials}</div>
+          <div class="req-info">
+            <div class="req-name">${r.user_name}</div>
+            <div class="req-email">${r.user_email || '—'} · ${r.branch} ${r.year}</div>
+            <div class="req-club">Club: <strong>${r.club_name}</strong></div>
+            <div class="req-date">Requested on ${date}</div>
+          </div>
+        </div>
+        <div class="req-card-right">
+          ${statusBadge}
+          <div class="req-actions">${actions}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function approveRequest(requestId) {
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/requests/${requestId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'accepted' })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Request approved! Member added to club.');
+      await loadJoinRequests();
+      const club = currentClub();
+      if (club) {
+        await loadClubMembers();
+        renderMembers();
+        renderOverview();
+      }
+      renderRequests();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to approve request'));
+    }
+  } catch (err) {
+    console.error('Error approving request:', err);
+    alert('Error approving request. Please try again.');
+  }
+}
+
+async function rejectRequest(requestId) {
+  if (!confirm('Reject this join request?')) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/requests/${requestId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'rejected' })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Request rejected.');
+      await loadJoinRequests();
+      updateRequestBadge();
+      renderRequests();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to reject request'));
+    }
+  } catch (err) {
+    console.error('Error rejecting request:', err);
+    alert('Error rejecting request. Please try again.');
+  }
 }
 
 // ── Events ────────────────────────────────────
@@ -357,6 +626,26 @@ function viewRegistrants(eventId) {
 // ══════════════════════════════════════════════
 function openModal(id) {
   document.getElementById(id).classList.add('open');
+  
+  // If opening add member modal, load available users
+  if (id === 'addMemberModal') {
+    loadAvailableUsers();
+    // Add search listener
+    const searchInput = document.getElementById('memberSearchInput');
+    if (searchInput) {
+      searchInput.oninput = () => {
+        const club = currentClub();
+        if (club) {
+          fetch(`http://localhost:3000/api/clubs/${club.id}/available-users`)
+            .then(r => r.json())
+            .then(d => {
+              if (d.success) displayAvailableUsers(d.data);
+            })
+            .catch(e => console.error('Search error:', e));
+        }
+      };
+    }
+  }
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');

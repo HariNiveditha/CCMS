@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
+    <script src="auth.js"></script>
 </head>
 
 <body>
@@ -14,6 +15,8 @@
     <h1>College Club Management System</h1>
     <nav>
         <a href="index.html">Home</a> |
+        <a href="clubs.html">Clubs</a> |
+        <a href="events.html">Events</a> |
         <a href="contact.html">Contact</a> |
         <span id="authSection"></span>
     </nav>
@@ -71,35 +74,12 @@
 </footer>
 
 <script>
-    const authSection  = document.getElementById('authSection');
     const adminSection = document.getElementById('adminSection');
 
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const userRole   = localStorage.getItem('userRole');   // "admin" | "user" | null
+    CCMSAuth.renderAuthSection('authSection');
 
-    if (isLoggedIn) {
-        // ── Logged-in nav ──────────────────────────────────────────────
-        authSection.innerHTML = `
-            <a href="user_dashboard.html">Dashboard</a>
-            <button onclick="logout()">Logout</button>
-        `;
-
-        // ── Show admin section for admin users ─────────────────────────
-        // Compare with trim() to guard against accidental whitespace
-        if (userRole && userRole.trim().toLowerCase() === 'admin') {
-            adminSection.style.display = 'block';
-        }
-    } else {
-        // ── Guest nav ──────────────────────────────────────────────────
-        authSection.innerHTML = `
-            <a href="login.html">Login</a>
-            <a href="signup.html">Sign Up</a>
-        `;
-    }
-
-    function logout() {
-        localStorage.clear();
-        window.location.href = 'index.html';
+    if (CCMSAuth.isLoggedIn() && CCMSAuth.isAdmin()) {
+        adminSection.style.display = 'block';
     }
 
     function goTo(page) {

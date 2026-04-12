@@ -1,70 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Clubs</title>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="clubs.css">
+  <title>Clubs — CCMS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse all college clubs and send a join request to become a member.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="clubs.css">
+  <script src="auth.js"></script>
 </head>
-
 <body>
 
-<h1>Clubs</h1>
+<header>
+  <div class="logo">CC</div>
+  <h1>College Club Management System</h1>
+  <nav id="clubsTopNav"></nav>
+</header>
 
-<div class="clubs-container" id="clubsContainer">
-    <p id="loadingMsg">Loading clubs...</p>
+<div class="clubs-page-wrap">
+  <div class="clubs-hero">
+    <h2 class="clubs-heading">Explore Clubs</h2>
+    <p class="clubs-subheading">Discover clubs that match your interests and send a join request.</p>
+  </div>
+
+  <div class="clubs-container" id="clubsContainer">
+    <p id="loadingMsg" class="loading-msg">Loading clubs…</p>
+  </div>
 </div>
 
-<script>
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
 
+<script>
 const API = 'http://localhost:3000/api';
 
-// Fetch clubs from backend
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getJoinRequests() {
+  try { return JSON.parse(localStorage.getItem('joinRequests')) || []; }
+  catch { return []; }
+}
+
+function saveJoinRequests(arr) {
+  localStorage.setItem('joinRequests', JSON.stringify(arr));
+}
+
+// Returns 'pending' | 'approved' | 'rejected' | null
+function getRequestStatus(clubId) {
+  const user = window.CCMSAuth ? CCMSAuth.getUser() : null;
+  if (!user) return null;
+  const req = getJoinRequests().find(r => String(r.clubId) === String(clubId) && String(r.userId) === String(user.id));
+  return req ? req.status : null;
+}
+
+// Check if user is already a member via adminClubs (manual add path)
+function isAlreadyMember(clubId) {
+  const user = window.CCMSAuth ? CCMSAuth.getUser() : null;
+  if (!user) return false;
+  try {
+    const adminClubs = JSON.parse(localStorage.getItem('adminClubs')) || [];
+    const club = adminClubs.find(c => String(c.id) === String(clubId));
+    if (!club) return false;
+    return club.members.some(m =>
+      String(m.userId) === String(user.id) ||
+      String(m.email).toLowerCase() === String(user.email).toLowerCase()
+    );
+  } catch { return false; }
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// ── Render button based on state ──────────────────────────────────────────────
+
+function buildJoinButton(club) {
+  const loggedIn = window.CCMSAuth && CCMSAuth.isLoggedIn();
+  const isAdmin  = window.CCMSAuth && CCMSAuth.isAdmin();
+
+  if (isAdmin) return ''; // Admins don't join clubs from here
+
+  if (!loggedIn) {
+    return `<a href="login.html" class="join-btn login-prompt">Login to Apply</a>`;
+  }
+
+  if (isAlreadyMember(club.id)) {
+    return `<button class="join-btn member-badge" disabled>✓ Member</button>`;
+  }
+
+  const status = getRequestStatus(club.id);
+
+  if (status === 'approved') {
+    return `<button class="join-btn approved-badge" disabled>✓ Approved</button>`;
+  }
+  if (status === 'pending') {
+    return `<button class="join-btn pending-badge" disabled>⏳ Request Pending</button>`;
+  }
+  if (status === 'rejected') {
+    return `<button class="join-btn rejected-badge" onclick="sendJoinRequest('${club.id}','${club.name}')">↩ Request Again</button>`;
+  }
+
+  return `<button class="join-btn apply-btn" onclick="sendJoinRequest('${club.id}','${club.name}')">Apply Now</button>`;
+}
+
+// ── Send Join Request ─────────────────────────────────────────────────────────
+
+async function sendJoinRequest(clubId, clubName) {
+  const user = CCMSAuth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  try {
+    const response = await fetch(`${API}/clubs/${clubId}/request-join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast(`✅ Join request sent for ${clubName}! The admin will review it.`, 'success');
+      // Re-render the button to show pending state
+      renderClubCard_update(clubId, clubName);
+    } else {
+      showToast(`❌ Error: ${data.message || 'Failed to send request'}`, 'error');
+    }
+  } catch (err) {
+    console.error('Error sending join request:', err);
+    showToast('Error sending request. Please try again.', 'error');
+  }
+}
+
+// Lightweight re-render of a single card's button (avoids full page reload)
+function renderClubCard_update(clubId, clubName) {
+  const btn = document.getElementById(`joinBtn-${clubId}`);
+  if (btn) btn.outerHTML = buildJoinButton({ id: clubId, name: clubName });
+}
+
+// ── Load Clubs from Backend ───────────────────────────────────────────────────
+
 async function loadClubs() {
-    try {
-        const res = await fetch(`${API}/clubs`);
-        const data = await res.json();
+  const container = document.getElementById('clubsContainer');
 
-        const container = document.getElementById('clubsContainer');
-        document.getElementById('loadingMsg')?.remove();
+  try {
+    const res  = await fetch(`${API}/clubs`);
+    const data = await res.json();
 
-        if (!data.success || data.data.length === 0) {
-            container.innerHTML = '<p>No clubs found.</p>';
-            return;
-        }
+    document.getElementById('loadingMsg')?.remove();
 
-        data.data.forEach(club => {
-            const card = document.createElement('div');
-            card.className = 'club-card';
-
-            card.innerHTML = `
-                <div class="club-title">${club.name}</div>
-                <div class="about">${club.description || 'No description available.'}</div>
-                <button class="apply-btn" onclick="applyClub('${club.name}')">Apply Now</button>
-            `;
-
-            container.appendChild(card);
-        });
-
-    } catch (err) {
-        document.getElementById('clubsContainer').innerHTML = '<p>Could not load clubs. Make sure the server is running.</p>';
-        console.error(err);
+    if (!data.success || data.data.length === 0) {
+      container.innerHTML = '<p class="empty-state">No clubs found. Check back later.</p>';
+      return;
     }
+
+    container.innerHTML = '';
+    data.data.forEach(club => {
+      const joinBtn = buildJoinButton(club);
+      const card = document.createElement('div');
+      card.className = 'club-card';
+      card.id = `club-card-${club.id}`;
+      card.innerHTML = `
+        <div class="club-card-top">
+          <div class="club-avatar">${club.name.slice(0,2).toUpperCase()}</div>
+          <div class="club-meta">
+            <div class="club-title">${club.name}</div>
+            <div class="club-id">ID #${club.id}</div>
+          </div>
+        </div>
+        <div class="about">${club.description || 'No description available.'}</div>
+        <div class="club-footer" id="joinBtn-${club.id}">
+          ${joinBtn}
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    document.getElementById('loadingMsg')?.remove();
+    container.innerHTML = `
+      <div class="error-state">
+        <div style="font-size:2rem;">⚠️</div>
+        <p>Could not load clubs.</p>
+        <p style="font-size:0.82rem;color:#888;">Make sure the server is running at <code>${API}</code></p>
+      </div>`;
+    console.error(err);
+  }
 }
 
-// Apply Function
-function applyClub(clubName) {
-    const user = localStorage.getItem('user');
-    if (!user) {
-        alert('Please login first');
-        window.location.href = 'login.html';
-        return;
-    }
-    alert('Application submitted for ' + clubName);
-}
-
+// ── Init ──────────────────────────────────────────────────────────────────────
+CCMSAuth.renderFullNav('clubsTopNav');
 loadClubs();
-
 </script>
 
 </body>

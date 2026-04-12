@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login — CCMS</title>
+    <title>Login - CCMS</title>
     <link rel="stylesheet" href="style.css">
     <style>
     .login-box {
@@ -17,6 +17,7 @@
     .login-box h2 { text-align: center; }
     #message { color: red; margin-top: 8px; }
     </style>
+    <script src="auth.js"></script>
 </head>
 <body>
 
@@ -40,7 +41,7 @@
 
 <script>
 async function loginUser() {
-    const email    = document.getElementById('email').value.trim();
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
 
     if (!email || !password) {
@@ -58,44 +59,59 @@ async function loginUser() {
         const data = await response.json();
 
         if (response.ok) {
-            // ── Store core auth info ──────────────────────────────────
             localStorage.setItem('isLoggedIn', 'true');
 
-            // Support both flat and nested user objects from backend
-            const userName = data.name || data.user?.name || '';
-            localStorage.setItem('userName', userName);
+            const user = data.user || {};
+            localStorage.setItem('userId', String(user.id ?? ''));
+            localStorage.setItem('userName', String(user.name ?? ''));
+            localStorage.setItem('userEmail', String(user.email ?? ''));
 
-            // ── Determine role ────────────────────────────────────────
-            // Backend should return data.role = "admin" | "user"
-            // Also support data.user.role for nested responses
-            const role = data.role || data.user?.role || 'user';
+            // Clear stale admin state from previous sessions
+            localStorage.removeItem('adminClubs');
+            localStorage.removeItem('currentClubIndex');
+
+            // Authoritative admin-club check: fetch clubs by user id.
+            let rawClubs = Array.isArray(user.adminClubs) ? user.adminClubs : [];
+            if (user.id) {
+                try {
+                    const clubsRes = await fetch(`http://localhost:3000/api/clubs/admin/${user.id}`);
+                    const clubsData = await clubsRes.json();
+                    if (clubsRes.ok && clubsData.success && Array.isArray(clubsData.data)) {
+                        rawClubs = clubsData.data;
+                    }
+                } catch (_) {
+                    // Fall back to login response clubs when clubs endpoint fails.
+                }
+            }
+
+            const role = rawClubs.length > 0 ? 'admin' : String(user.role ?? 'user').trim().toLowerCase();
             localStorage.setItem('userRole', role);
 
-            // ── Seed admin club data for dashboard ────────────────────
-            // Only write if backend returned adminClubs AND we haven't
-            // already stored local club data (avoid overwriting edits).
-            const rawClubs = data.adminClubs || data.user?.adminClubs || [];
-            if (role === 'admin' && rawClubs.length > 0 && !localStorage.getItem('adminClubs')) {
+            if (rawClubs.length > 0) {
                 const clubShells = rawClubs.map(c => ({
-                    id:               c.id,
-                    name:             c.name,
-                    recruitmentOpen:  c.recruitmentOpen || false,
-                    members:          c.members  || [],
-                    events:           c.events   || []
+                    id: c.id,
+                    name: c.name,
+                    recruitmentOpen: Boolean(c.recruitmentOpen),
+                    members: Array.isArray(c.members) ? c.members : [],
+                    events: Array.isArray(c.events) ? c.events : []
                 }));
                 localStorage.setItem('adminClubs', JSON.stringify(clubShells));
             }
 
-            // ── Redirect ──────────────────────────────────────────────
-            // Always go to the main portal; index.html will show the
-            // Admin Dashboard card automatically for admin users.
-            window.location.href = 'index.html';
+            if (window.CCMSAuth && window.CCMSAuth.saveUser) {
+                CCMSAuth.saveUser({
+                    id: user.id,
+                    role: role,
+                    name: user.name,
+                    email: user.email
+                });
+            }
 
+            window.location.href = 'index.html';
         } else {
             document.getElementById('message').textContent =
-                data.message || 'Login failed. Please try again.';
+                data.message || `Login failed (status ${response.status}). Please try again.`;
         }
-
     } catch (error) {
         alert('Could not connect to server. Make sure the backend is running.');
         console.error(error);

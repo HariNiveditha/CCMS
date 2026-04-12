@@ -1,141 +1,233 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2');
+const db = require('../db');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
 
-// ✅ Create connection pool (better for performance)
-const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'ccms',
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
-
-// ✅ Check DB connection once
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("❌ DB CONNECTION FAILED:", err);
-  } else {
-    console.log("✅ Connected to MySQL (localhost)");
-    connection.release();
+router.post('/register', async (req, res) => {
+  const { name, email, password, role, branch, year } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ success: false, message: 'Name, email and password are required' });
+  try {
+    const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existing.length > 0)
+      return res.status(409).json({ success: false, message: 'Email already registered' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await db.query(
+      'INSERT INTO users (name, email, password, role, branch, year) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, role || 'student', branch || null, year || null]
+    );
+    res.status(201).json({ success: true, message: 'User registered', userId: result.insertId });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 });
 
-// ✅ Debug (optional - remove later)
-db.query("SELECT DATABASE()", (err, result) => {
-  if (!err) console.log("📦 CURRENT DB:", result);
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ success: false, message: 'Email and password are required' });
+  try {
+    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (users.length === 0)
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    const user = users[0];
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+
+    // Admin rights are determined by clubs.admin_id mapping.
+    const [clubs] = await db.query(
+      'SELECT id, name FROM clubs WHERE admin_id = ? ORDER BY id ASC',
+      [user.id]
+    );
+
+    const computedRole = clubs.length > 0 ? 'admin' : (user.role || 'student');
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: computedRole,
+        adminClubs: clubs.map(c => ({
+          id: c.id,
+          name: c.name,
+          recruitmentOpen: false,
+          members: [],
+          events: []
+        }))
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
 });
 
-// =======================
-// 🚀 SIGNUP
-// =======================
-router.post('/signup', async (req, res) => {
-  const { roll_number, name, email, phone, password } = req.body;
-
-  if (!roll_number || !name || !email || !phone || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
+// GET user profile by ID (admin only)
+router.get('/user/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const [users] = await db.query(
+      `SELECT u.id, u.name, u.email, u.phone, u.branch, u.year, u.role, u.created_at, u.updated_at,
+              GROUP_CONCAT(c.name) as club_name
+       FROM users u
+       LEFT JOIN clubs c ON c.admin_id = u.id
+       WHERE u.id = ?
+       GROUP BY u.id`,
+      [userId]
+    );
 
-    const sql = `
-      INSERT INTO users (roll_number, name, email, phone, password)
-      VALUES (?, ?, ?, ?, ?)
-    `;
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
-    db.query(sql, [roll_number, name, email, phone, hashedPassword], (err) => {
-      if (err) {
-        console.log("SIGNUP ERROR:", err);
-
-        if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(409).json({
-            message: 'Roll number or email already exists'
-          });
-        }
-
-        return res.status(500).json({ message: 'Database error' });
+    const user = users[0];
+    res.json({
+      success: true,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || '',
+        branch: user.branch || 'Not Specified',
+        year: user.year || 'Not Specified',
+        role: user.role || 'student',
+        club_name: user.club_name || 'Not Assigned',
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        joined_at: user.created_at
       }
-
-      res.status(201).json({
-        message: 'User registered successfully!'
-      });
     });
-
   } catch (err) {
-    console.log("HASH ERROR:", err);
-    res.status(500).json({ message: 'Error hashing password' });
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 });
 
-// =======================
-// 🔐 LOGIN
-// =======================
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
+// PUT update user profile by ID (admin only)
+router.put('/user/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
   }
 
-  const sql = 'SELECT * FROM users WHERE email = ?';
+  const { name, phone, branch, year } = req.body;
 
-  db.query(sql, [email], async (err, results) => {
-    if (err) {
-      console.log("LOGIN ERROR:", err);
-      return res.status(500).json({ message: 'Database error' });
+  // At least one field must be provided
+  if (!name && !phone && !branch && !year) {
+    return res.status(400).json({ success: false, message: 'No fields to update' });
+  }
+
+  try {
+    // Build dynamic update query
+    const updates = [];
+    const values = [];
+
+    if (name) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (phone) {
+      updates.push('phone = ?');
+      values.push(phone);
+    }
+    if (branch) {
+      updates.push('branch = ?');
+      values.push(branch);
+    }
+    if (year) {
+      updates.push('year = ?');
+      values.push(year);
     }
 
-    if (results.length === 0) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    updates.push('updated_at = NOW()');
+    values.push(userId);
+
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+
+    const [result] = await db.query(query, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const user = results[0];
+    res.json({ success: true, message: 'User profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
 
-    try {
-      const match = await bcrypt.compare(password, user.password);
+// DELETE user (admin only) - Removes user from database
+router.delete('/user/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
+  }
 
-      if (!match) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
+  try {
+    const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
 
-      // ✅ Check admin role
-      const adminQuery = `
-        SELECT id, name 
-        FROM clubs 
-        WHERE admin_id = ?
-      `;
-
-      db.query(adminQuery, [user.id], (err, clubs) => {
-        if (err) {
-          console.log("ADMIN QUERY ERROR:", err);
-          return res.status(500).json({ message: 'Database error' });
-        }
-
-        const role = clubs.length > 0 ? 'admin' : 'user';
-
-        res.status(200).json({
-          message: 'Login successful!',
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: role,
-            adminClubs: clubs
-          }
-        });
-      });
-
-    } catch (err) {
-      console.log("BCRYPT ERROR:", err);
-      res.status(500).json({ message: 'Error comparing password' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-  });
+
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// PUT update user profile (Phase 2 - Self/User update)
+router.put('/profile/update/:userId', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
+  }
+
+  const { phone, roll_number, profile_completed } = req.body;
+
+  try {
+    // Build dynamic update query
+    const updates = [];
+    const values = [];
+
+    if (phone !== undefined) {
+      updates.push('phone = ?');
+      values.push(phone || null);
+    }
+    if (roll_number !== undefined) {
+      updates.push('roll_number = ?');
+      values.push(roll_number || null);
+    }
+    if (profile_completed !== undefined) {
+      updates.push('profile_completed = ?');
+      values.push(profile_completed);
+    }
+
+    // Always update timestamp
+    updates.push('updated_at = NOW()');
+    values.push(userId);
+
+    if (updates.length === 1) {
+      return res.status(400).json({ success: false, message: 'No fields to update' });
+    }
+
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    const [result] = await db.query(query, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
 });
 
 module.exports = router;

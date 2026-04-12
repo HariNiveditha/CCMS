@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="events.css">
+    <script src="auth.js"></script>
 </head>
 
 <body>
@@ -65,7 +66,6 @@ async function loadEvents() {
             return;
         }
 
-        // Determine upcoming vs past based on date
         const now = new Date();
         allEvents = data.data.map(e => ({
             ...e,
@@ -81,7 +81,8 @@ async function loadEvents() {
 }
 
 function showError() {
-    document.getElementById('upcomingGrid').innerHTML = '<p>Could not load events. Make sure the server is running.</p>';
+    document.getElementById('upcomingGrid').innerHTML =
+        '<p>Could not load events. Make sure the server is running.</p>';
     document.getElementById('pastGrid').innerHTML = '';
 }
 
@@ -91,7 +92,10 @@ function renderEvents(filter) {
     upcomingGrid.innerHTML = '';
     pastGrid.innerHTML = '';
 
-    const filtered = filter === 'all' ? allEvents : allEvents.filter(e => e.category === filter);
+    const filtered = filter === 'all'
+        ? allEvents
+        : allEvents.filter(e => e.category === filter);
+
     const upcoming = filtered.filter(e => e.status === 'upcoming');
     const past = filtered.filter(e => e.status === 'past');
 
@@ -111,10 +115,15 @@ function renderEvents(filter) {
 function createCard(e) {
     const isPast = e.status === 'past';
     const eventDate = new Date(e.date);
-    const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
-    const timeStr = eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-    // Check if user is already registered (from localStorage)
+    const dateStr = eventDate.toLocaleDateString('en-IN', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const timeStr = eventDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit'
+    });
+
     const registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
     const isRegistered = registeredEvents.includes(e.id);
 
@@ -130,13 +139,15 @@ function createCard(e) {
             <span>📍 ${e.location || 'TBD'}</span>
         </div>
         <p class="event-desc">${e.description || ''}</p>
-        ${isPast
+        ${
+            isPast
             ? `<button class="btn-past" disabled>Event Completed</button>`
             : isRegistered
             ? `<button class="btn-past" disabled>✓ Already Registered</button>`
             : `<button class="btn-register" onclick="register(${e.id})">Register Now</button>`
         }
     `;
+
     return card;
 }
 
@@ -147,9 +158,9 @@ function filterEvents(category, btn) {
     renderEvents(category);
 }
 
+// ✅ FIXED REGISTER FUNCTION
 function register(eventId) {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
+    if (!window.CCMSAuth || !CCMSAuth.isLoggedIn()) {
         alert('Please login first to register for events.');
         window.location.href = 'login.html';
         return;
@@ -157,20 +168,9 @@ function register(eventId) {
     window.location.href = `event-registration.html?eventId=${eventId}`;
 }
 
-// Auth nav
-const authSection = document.getElementById('authSection');
-if (localStorage.getItem('isLoggedIn')) {
-    authSection.innerHTML = `<a href="user_dashboard.html">Dashboard</a> | <a href="#" onclick="logout()">Logout</a>`;
-} else {
-    authSection.innerHTML = `<a href="login.html">Login</a> <a href="signup.html">Sign Up</a>`;
-}
-
-function logout() {
-    localStorage.clear();
-    window.location.href = 'index.html';
-}
-
+CCMSAuth.renderAuthSection('authSection');
 loadEvents();
+
 </script>
 
 </body>

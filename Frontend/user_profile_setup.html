@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Complete Your Profile - CCMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #74ebd5 0%, #acb6e5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .profile-setup-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .step-number.active {
+      background: linear-gradient(135deg, #74ebd5 0%, #acb6e5 100%);
+      color: white;
+    }
+
+    .step-number.completed {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
+
+    h2 {
+      color: #164777;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .phase-subtitle {
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      margin-bottom: 30px;
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+    }
+
+    .form-section h3 {
+      color: #164777;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #74ebd5;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    label .optional {
+      color: #999;
+      font-size: 0.85rem;
+      font-weight: normal;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus,
+    input[type="url"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #74ebd5;
+      box-shadow: 0 0 0 3px rgba(116, 235, 213, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .profile-setup-container {
+        padding: 25px;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #74ebd5 0%, #acb6e5 100%);
+      color: white;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(116, 235, 213, 0.3);
+    }
+
+    .btn-skip {
+      background: #f0f0f0;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+
+    .btn-skip:hover {
+      background: #e8e8e8;
+    }
+
+    .alert {
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.error {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+
+    .alert.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+    }
+
+    .alert.info {
+      background: #e3f2fd;
+      color: #1565c0;
+      border-left: 4px solid #1565c0;
+    }
+
+    .info-box {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #74ebd5;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #74ebd5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+<div class="profile-setup-container">
+  
+  <!-- Progress Bar -->
+  <div class="progress-bar">
+    <div class="progress-step">
+      <div class="step-number completed">✓</div>
+      <div class="step-label">Registration</div>
+    </div>
+    <div class="progress-step">
+      <div class="step-number active">2</div>
+      <div class="step-label">Profile</div>
+    </div>
+    <div class="progress-step">
+      <div class="step-number">3</div>
+      <div class="step-label">Dashboard</div>
+    </div>
+  </div>
+
+  <h2>Complete Your Profile</h2>
+  <p class="phase-subtitle">Phase 2: Add Your Contact Details (Optional)</p>
+
+  <div class="alert" id="alertBox"></div>
+
+  <div class="info-box">
+    💡 <strong>Optional Information:</strong> Add your contact details to help us connect with you better. You can skip this for now and update later from your dashboard.
+  </div>
+
+  <form id="profileForm">
+
+    <!-- Contact Information Section -->
+    <div class="form-section">
+      <h3>📞 Contact Information</h3>
+      
+      <div class="form-group">
+        <label for="phone">Phone Number <span class="optional">(optional)</span></label>
+        <input type="tel" id="phone" placeholder="e.g., 9876543210" pattern="[0-9]+" maxlength="15">
+      </div>
+
+      <div class="form-group">
+        <label for="rollNumber">Roll Number <span class="optional">(optional)</span></label>
+        <input type="text" id="rollNumber" placeholder="e.g., CS21001">
+      </div>
+    </div>
+
+
+
+  </form>
+
+  <!-- Loading State -->
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    <p>Saving your profile...</p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn-skip" onclick="skipProfile()">Skip for Now</button>
+    <button class="btn-save" onclick="saveProfile()">Save Profile</button>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+});
+
+function checkAuth() {
+  // Verify user is logged in
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  if (!isLoggedIn) {
+    window.location.href = 'signup.html';
+    return;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ALERT HELPER
+// ════════════════════════════════════════════════════════════════
+function showAlert(message, type = 'info') {
+  const alertBox = document.getElementById('alertBox');
+  alertBox.textContent = message;
+  alertBox.className = `alert ${type}`;
+  alertBox.style.display = 'block';
+  
+  if (type === 'success') {
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+    }, 3000);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SAVE PROFILE
+// ════════════════════════════════════════════════════════════════
+async function saveProfile() {
+  try {
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+      showAlert('❌ Error: User ID not found. Please log in again.', 'error');
+      return;
+    }
+
+    // Get form values - only phone and roll_number
+    const profileData = {
+      phone: document.getElementById('phone').value.trim(),
+      roll_number: document.getElementById('rollNumber').value.trim(),
+      profile_completed: true
+    };
+
+    // Validate phone if provided
+    if (profileData.phone && !/^\d{10,}$/.test(profileData.phone.replace(/\D/g, ''))) {
+      showAlert('❌ Phone number must be at least 10 digits.', 'error');
+      return;
+    }
+
+    // Show loading state
+    document.getElementById('loadingState').style.display = 'block';
+
+    // Send to API
+    const response = await fetch(`http://localhost:3000/api/auth/profile/update/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profileData)
+    });
+
+    const data = await response.json();
+
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (response.ok && data.success) {
+      showAlert('✅ Profile saved successfully! Redirecting to dashboard...', 'success');
+      setTimeout(() => {
+        window.location.href = 'user_dashboard.html';
+      }, 2000);
+    } else {
+      showAlert('❌ ' + (data.message || 'Failed to save profile'), 'error');
+    }
+
+  } catch (error) {
+    console.error('Error saving profile:', error);
+    document.getElementById('loadingState').style.display = 'none';
+    showAlert('❌ Connection error. Please try again.', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SKIP PROFILE
+// ════════════════════════════════════════════════════════════════
+function skipProfile() {
+  const confirmed = confirm('Are you sure? You can complete your profile anytime from your dashboard.');
+  if (confirmed) {
+    window.location.href = 'user_dashboard.html';
+  }
+}
+</script>
+
+</body>
+</html>

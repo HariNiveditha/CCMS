@@ -4,7 +4,7 @@ const db = require('../db');
 const bcrypt = require('bcrypt');
 
 router.post('/register', async (req, res) => {
-  const { name, email, password, role, branch, year } = req.body;
+  const { name, email, password, phone, role, branch, year } = req.body;
   if (!name || !email || !password)
     return res.status(400).json({ success: false, message: 'Name, email and password are required' });
   try {
@@ -13,8 +13,8 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ success: false, message: 'Email already registered' });
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await db.query(
-      'INSERT INTO users (name, email, password, role, branch, year) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, role || 'student', branch || null, year || null]
+      'INSERT INTO users (name, email, password, phone, role, branch, year) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, phone || null, role || 'student', branch || null, year || null]
     );
     res.status(201).json({ success: true, message: 'User registered', userId: result.insertId });
   } catch (err) {
@@ -225,6 +225,56 @@ router.put('/profile/update/:userId', async (req, res) => {
     }
 
     res.json({ success: true, message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// USER-SPECIFIC ENDPOINTS
+// ═══════════════════════════════════════════════════════════════
+
+// GET user's clubs (clubs they are members of)
+router.get('/users/:userId/clubs', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
+  }
+
+  try {
+    const [clubs] = await db.query(
+      `SELECT c.id, c.name, c.description, c.admin_id, cm.role, cm.joined_date
+       FROM clubs c
+       JOIN club_members cm ON c.id = cm.club_id
+       WHERE cm.user_id = ? AND cm.status = 'accepted'
+       ORDER BY cm.joined_date DESC`,
+      [userId]
+    );
+
+    res.json({ success: true, data: clubs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// GET user's join requests
+router.get('/users/:userId/requests', async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid user id' });
+  }
+
+  try {
+    const [requests] = await db.query(
+      `SELECT jr.id, jr.club_id, jr.status, jr.requested_at, jr.reviewed_at, c.name as club_name
+       FROM join_requests jr
+       JOIN clubs c ON c.id = jr.club_id
+       WHERE jr.user_id = ?
+       ORDER BY jr.requested_at DESC`,
+      [userId]
+    );
+
+    res.json({ success: true, data: requests });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }

@@ -17,6 +17,22 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET check if user is registered for an event (must be before /:id)
+router.get('/:id/check-registration', async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) return res.json({ registered: false });
+
+    const [registration] = await db.query(
+      'SELECT id FROM event_registrations WHERE event_id = ? AND email = ?',
+      [req.params.id, email]
+    );
+    res.json({ registered: registration.length > 0 });
+  } catch (err) {
+    res.json({ registered: false });
+  }
+});
+
 // GET single event by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -82,6 +98,46 @@ router.delete('/:id', async (req, res) => {
     const [result] = await db.query('DELETE FROM events WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Event not found' });
     res.json({ success: true, message: 'Event deleted' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// POST register a user for an event
+router.post('/register', async (req, res) => {
+  const { event_id, name, email, phone, roll_number, special_requirements } = req.body;
+  
+  if (!event_id || !name || !email || !phone || !roll_number) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    // Check if event exists
+    const [event] = await db.query('SELECT id FROM events WHERE id = ?', [event_id]);
+    if (event.length === 0) {
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    // Check if user is already registered
+    const [existing] = await db.query(
+      'SELECT id FROM event_registrations WHERE event_id = ? AND email = ?',
+      [event_id, email]
+    );
+    if (existing.length > 0) {
+      return res.status(409).json({ success: false, message: 'You are already registered for this event' });
+    }
+
+    // Insert registration
+    const [result] = await db.query(
+      'INSERT INTO event_registrations (event_id, name, email, phone, roll_number, special_requirements) VALUES (?, ?, ?, ?, ?, ?)',
+      [event_id, name, email, phone, roll_number, special_requirements || null]
+    );
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Registration successful',
+      registrationId: result.insertId 
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }

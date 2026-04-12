@@ -114,6 +114,10 @@ function createCard(e) {
     const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
     const timeStr = eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
+    // Check if user is already registered (from localStorage)
+    const registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
+    const isRegistered = registeredEvents.includes(e.id);
+
     const card = document.createElement('div');
     card.className = 'event-card' + (isPast ? ' past-card' : '');
 
@@ -128,7 +132,9 @@ function createCard(e) {
         <p class="event-desc">${e.description || ''}</p>
         ${isPast
             ? `<button class="btn-past" disabled>Event Completed</button>`
-            : `<button class="btn-register" onclick="register('${e.title}')">Register Now</button>`
+            : isRegistered
+            ? `<button class="btn-past" disabled>✓ Already Registered</button>`
+            : `<button class="btn-register" onclick="register(${e.id})">Register Now</button>`
         }
     `;
     return card;
@@ -141,14 +147,14 @@ function filterEvents(category, btn) {
     renderEvents(category);
 }
 
-function register(eventName) {
+function register(eventId) {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
         alert('Please login first to register for events.');
         window.location.href = 'login.html';
         return;
     }
-    alert(`Successfully registered for ${eventName}!`);
+    window.location.href = `event-registration.html?eventId=${eventId}`;
 }
 
 // Auth nav

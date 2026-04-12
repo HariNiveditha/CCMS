@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register for Event - College Club Management</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .registration-wrapper {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-summary {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .event-summary h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .event-summary p {
+            margin: 8px 0;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-register {
+            flex: 1;
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-register:hover {
+            background: #218838;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px 20px;
+            background: #e9ecef;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #ddd;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">CC</div>
+    <h1>College Club Management System</h1>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="clubs.html">Clubs</a> |
+        <a href="events.html">Events</a> |
+        <a href="members.html">Members</a> |
+        <a href="contact.html">Contact</a> |
+        <span id="authSection"></span>
+    </nav>
+</header>
+
+<div class="registration-wrapper">
+    <h2>Event Registration</h2>
+
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+
+    <div id="loadingDiv" class="loading">
+        <p>Loading event details...</p>
+    </div>
+
+    <div id="registrationForm" style="display: none;">
+        <!-- Event Summary -->
+        <div class="event-summary">
+            <h3 id="eventTitle">Event Title</h3>
+            <p><strong>📅 Date & Time:</strong> <span id="eventDate"></span></p>
+            <p><strong>📍 Location:</strong> <span id="eventLocation"></span></p>
+            <p><strong>🏛️ Club:</strong> <span id="eventClub"></span></p>
+            <p><strong>Description:</strong> <span id="eventDesc"></span></p>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="regForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+
+            <div class="form-group">
+                <label for="rollNumber">Roll Number *</label>
+                <input type="text" id="rollNumber" name="rollNumber" required>
+            </div>
+
+            <div class="form-group">
+                <label for="specialRequirements">Special Requirements or Comments</label>
+                <textarea id="specialRequirements" name="specialRequirements" placeholder="Any dietary restrictions, accessibility needs, or other requirements?"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-register">Confirm Registration</button>
+                <button type="button" class="btn-cancel" onclick="history.back()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 College Club Management System</p>
+</footer>
+
+<script>
+
+const API = 'http://localhost:3000/api';
+let eventId = null;
+let userInfo = null;
+
+// Get event ID from URL parameter
+function getEventIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('eventId');
+}
+
+// Load event details
+async function loadEventDetails() {
+    try {
+        eventId = getEventIdFromURL();
+
+        if (!eventId) {
+            showError('Event ID not provided');
+            return;
+        }
+
+        const res = await fetch(`${API}/events/${eventId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            showError('Event not found');
+            return;
+        }
+
+        const event = data.data;
+
+        // Populate event summary
+        document.getElementById('eventTitle').textContent = event.title;
+        const eventDate = new Date(event.date);
+        const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('eventDate').textContent = `${dateStr} at ${timeStr}`;
+        document.getElementById('eventLocation').textContent = event.location || 'TBD';
+        document.getElementById('eventClub').textContent = event.club_name || 'General';
+        document.getElementById('eventDesc').textContent = event.description || 'No description provided';
+
+        // Load user info from localStorage
+        const storedUser = localStorage.getItem('userInfo');
+        if (storedUser) {
+            userInfo = JSON.parse(storedUser);
+            document.getElementById('name').value = userInfo.name || '';
+            document.getElementById('email').value = userInfo.email || '';
+            document.getElementById('phone').value = userInfo.phone || '';
+            document.getElementById('rollNumber').value = userInfo.roll_number || '';
+        }
+
+        // Show form, hide loader
+        document.getElementById('loadingDiv').style.display = 'none';
+        document.getElementById('registrationForm').style.display = 'block';
+
+    } catch (err) {
+        showError('Error loading event details');
+        console.error(err);
+    }
+}
+
+// Show error message
+function showError(message) {
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorMessage').style.display = 'block';
+    document.getElementById('loadingDiv').style.display = 'none';
+}
+
+// Show success message
+function showSuccess(message) {
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successMessage').style.display = 'block';
+    setTimeout(() => {
+        window.location.href = 'events.html';
+    }, 2000);
+}
+
+// Submit registration form
+document.getElementById('regForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const rollNumber = document.getElementById('rollNumber').value.trim();
+    const specialRequirements = document.getElementById('specialRequirements').value.trim();
+
+    if (!name || !email || !phone || !rollNumber) {
+        showError('Please fill in all required fields');
+        return;
+    }
+
+    try {
+        const regBtn = document.querySelector('.btn-register');
+        regBtn.disabled = true;
+        regBtn.textContent = 'Registering...';
+
+        const res = await fetch(`${API}/events/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                event_id: eventId,
+                name,
+                email,
+                phone,
+                roll_number: rollNumber,
+                special_requirements: specialRequirements
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            showError(data.message || 'Registration failed');
+            regBtn.disabled = false;
+            regBtn.textContent = 'Confirm Registration';
+            return;
+        }
+
+        // Store registered event ID
+        let registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
+        if (!registeredEvents.includes(eventId)) {
+            registeredEvents.push(parseInt(eventId));
+            localStorage.setItem('registeredEvents', JSON.stringify(registeredEvents));
+        }
+
+        regBtn.textContent = '✓ Registered!';
+        regBtn.style.background = '#6c757d';
+        showSuccess('Registration successful! Redirecting to events...');
+
+    } catch (err) {
+        showError('Error submitting registration');
+        console.error(err);
+        const regBtn = document.querySelector('.btn-register');
+        regBtn.disabled = false;
+        regBtn.textContent = 'Confirm Registration';
+    }
+});
+
+// Auth nav
+const authSection = document.getElementById('authSection');
+const isLoggedIn = localStorage.getItem('isLoggedIn');
+if (isLoggedIn) {
+    authSection.innerHTML = `<a href="user_dashboard.html">Dashboard</a> | <a href="#" onclick="logout()">Logout</a>`;
+} else {
+    // Redirect to login if not logged in
+    document.getElementById('loadingDiv').innerHTML = '<p>Please log in to register for events. Redirecting...</p>';
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 2000);
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+// Load event details on page load
+loadEventDetails();
+
+</script>
+
+</body>
+</html>

@@ -699,6 +699,103 @@ td.empty {
 }
 
 /* ═══════════════════════════════════════════════ */
+/* RECRUITMENT BANNER */
+/* ═══════════════════════════════════════════════ */
+.recruit-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.recruit-banner .info-block {
+  flex: 1;
+}
+
+.recruit-banner .title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.recruit-banner .desc {
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
+.toggle-pill {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.recruit-status {
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  min-width: 80px;
+  text-align: center;
+}
+
+.recruit-status.open {
+  background: rgba(26,122,74,0.3);
+  color: #90EE90;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* TOGGLE SWITCH */
+/* ═══════════════════════════════════════════════ */
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  margin-right: 1rem;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  background: #ccc;
+  border-radius: 14px;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+}
+
+/* ═══════════════════════════════════════════════ */
 /* SCROLLBAR */
 /* ═══════════════════════════════════════════════ */
 ::-webkit-scrollbar {

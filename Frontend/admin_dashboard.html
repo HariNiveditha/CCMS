@@ -97,8 +97,11 @@
             <div class="desc">Toggle to open or close applications for this club.</div>
           </div>
           <div class="toggle-pill">
+            <label class="toggle-switch">
+              <input type="checkbox" id="recruitmentCheckbox" onchange="toggleRecruitment()">
+              <span class="toggle-slider"></span>
+            </label>
             <span class="recruit-status" id="recruitStatus">CLOSED</span>
-            <div class="toggle-track" id="toggleTrack" onclick="toggleRecruitment()"></div>
           </div>
         </div>
       </div>

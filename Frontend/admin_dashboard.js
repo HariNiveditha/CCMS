@@ -187,23 +187,48 @@ function renderOverview() {
   document.getElementById('statUpcoming').textContent = upcoming;
   document.getElementById('statCoords').textContent   = coords;
 
-  const track  = document.getElementById('toggleTrack');
+  // Update recruitment toggle
+  const checkbox = document.getElementById('recruitmentCheckbox');
   const status = document.getElementById('recruitStatus');
+  
+  checkbox.checked = club.recruitmentOpen;
+  
   if (club.recruitmentOpen) {
-    track.classList.add('on');
     status.textContent = 'OPEN';
     status.classList.add('open');
   } else {
-    track.classList.remove('on');
     status.textContent = 'CLOSED';
     status.classList.remove('open');
   }
 }
 
-function toggleRecruitment() {
-  currentClub().recruitmentOpen = !currentClub().recruitmentOpen;
-  persist();
-  renderOverview();
+async function toggleRecruitment() {
+  const club = currentClub();
+  const checkbox = document.getElementById('recruitmentCheckbox');
+  const newStatus = checkbox.checked;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/recruitment`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recruitmentOpen: newStatus })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      club.recruitmentOpen = newStatus;
+      renderOverview();
+      alert(`✅ ${data.message}`);
+    } else {
+      alert('❌ Error: ' + data.message);
+      checkbox.checked = !newStatus; // Revert checkbox
+    }
+  } catch (err) {
+    console.error('Error toggling recruitment:', err);
+    alert('Error updating recruitment status');
+    checkbox.checked = !newStatus; // Revert checkbox
+  }
 }
 
 // ── Members ───────────────────────────────────

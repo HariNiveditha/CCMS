@@ -21,7 +21,7 @@ router.get('/admin/:adminId', async (req, res) => {
 
   try {
     const [clubs] = await db.query(
-      'SELECT id, name, description, admin_id, created_at FROM clubs WHERE admin_id = ? ORDER BY created_at DESC',
+      'SELECT id, name, description, admin_id, recruitmentOpen, created_at FROM clubs WHERE admin_id = ? ORDER BY created_at DESC',
       [adminId]
     );
     res.json({ success: true, data: clubs });
@@ -206,6 +206,34 @@ router.delete('/:clubId/members/:userId', async (req, res) => {
     }
 
     res.json({ success: true, message: 'Member removed successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// PUT toggle recruitment status (admin only)
+router.put('/:clubId/recruitment', async (req, res) => {
+  try {
+    const clubId = req.params.clubId;
+    const { recruitmentOpen } = req.body;
+
+    if (recruitmentOpen === undefined) {
+      return res.status(400).json({ success: false, message: 'recruitmentOpen is required' });
+    }
+
+    const [result] = await db.query(
+      'UPDATE clubs SET recruitmentOpen = ? WHERE id = ?',
+      [recruitmentOpen ? 1 : 0, clubId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Club not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: recruitmentOpen ? '✅ Recruitment opened!' : '✅ Recruitment closed!' 
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }

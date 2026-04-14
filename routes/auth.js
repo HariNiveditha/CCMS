@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET user profile by ID (admin only)
+// GET user profile by ID
 router.get('/user/:userId', async (req, res) => {
   const userId = Number(req.params.userId);
   if (!Number.isInteger(userId) || userId <= 0) {
@@ -74,12 +74,7 @@ router.get('/user/:userId', async (req, res) => {
 
   try {
     const [users] = await db.query(
-      `SELECT u.id, u.name, u.email, u.phone, u.branch, u.year, u.role, u.created_at, u.updated_at,
-              GROUP_CONCAT(c.name) as club_name
-       FROM users u
-       LEFT JOIN clubs c ON c.admin_id = u.id
-       WHERE u.id = ?
-       GROUP BY u.id`,
+      'SELECT id, name, email, phone, roll_number, branch, year, role, created_at, updated_at FROM users WHERE id = ?',
       [userId]
     );
 
@@ -95,16 +90,16 @@ router.get('/user/:userId', async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone || '',
+        roll_number: user.roll_number || '',
         branch: user.branch || 'Not Specified',
         year: user.year || 'Not Specified',
         role: user.role || 'student',
-        club_name: user.club_name || 'Not Assigned',
         created_at: user.created_at,
-        updated_at: user.updated_at,
-        joined_at: user.created_at
+        updated_at: user.updated_at
       }
     });
   } catch (err) {
+    console.error('Error fetching user:', err);
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 });

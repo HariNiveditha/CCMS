@@ -33,14 +33,41 @@ header {
 nav {
     background-color: #4a7097;
     text-align: center;
-    padding: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 18px;
 }
 
 nav a {
     color: white;
     text-decoration: none;
-    margin: 15px;
     font-weight: bold;
+}
+
+nav span {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 18px;
+}
+
+nav span a {
+    margin: 0;
+}
+
+nav span:empty {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    nav {
+        gap: 8px 14px;
+        padding: 12px;
+    }
 }
 
 nav a:hover {

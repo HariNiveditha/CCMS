@@ -35,12 +35,27 @@ router.get('/club/:clubId', async (req, res) => {
 // (must be before /:id)
 router.get('/:id/check-registration', async (req, res) => {
   try {
+    const userId = req.query.userId;
     const email = req.query.email;
-    if (!email) return res.json({ registered: false });
+
+    if (!userId && !email) return res.json({ registered: false });
+
+    const conditions = [];
+    const values = [req.params.id];
+
+    if (userId) {
+      conditions.push('user_id = ?');
+      values.push(userId);
+    }
+
+    if (email) {
+      conditions.push('email = ?');
+      values.push(email);
+    }
 
     const [registration] = await db.query(
-      'SELECT id FROM event_registrations WHERE event_id = ? AND email = ?',
-      [req.params.id, email]
+      `SELECT id FROM event_registrations WHERE event_id = ? AND (${conditions.join(' OR ')})`,
+      values
     );
 
     res.json({ registered: registration.length > 0 });
@@ -133,13 +148,34 @@ router.delete('/:id', async (req, res) => {
 
 // POST register a user for an event
 router.post('/register', async (req, res) => {
-  const { event_id, name, email, phone, roll_number, special_requirements } = req.body;
+  const {
+    event_id,
+    user_id,
+    name,
+    roll_number,
+    event_name,
+    location,
+    branch,
+    year,
+    outcome_of_event
+  } = req.body;
 
-  if (!event_id || !name || !email || !phone || !roll_number) {
+  if (!event_id || !user_id || !name || !roll_number || !event_name || !location || !branch || !year || !outcome_of_event) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
 
   try {
+    const [users] = await db.query(
+      'SELECT id, email, phone FROM users WHERE id = ?',
+      [user_id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const user = users[0];
+
     // Check if event exists
     const [event] = await db.query(
       'SELECT id FROM events WHERE id = ?',
@@ -152,8 +188,8 @@ router.post('/register', async (req, res) => {
 
     // Check if already registered
     const [existing] = await db.query(
-      'SELECT id FROM event_registrations WHERE event_id = ? AND email = ?',
-      [event_id, email]
+      'SELECT id FROM event_registrations WHERE event_id = ? AND user_id = ?',
+      [event_id, user_id]
     );
 
     if (existing.length > 0) {
@@ -166,9 +202,21 @@ router.post('/register', async (req, res) => {
     // Insert registration
     const [result] = await db.query(
       `INSERT INTO event_registrations 
-      (event_id, name, email, phone, roll_number, special_requirements) 
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [event_id, name, email, phone, roll_number, special_requirements || null]
+      (event_id, user_id, name, email, phone, roll_number, event_name, event_location, branch, year, outcome_of_event) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        event_id,
+        user_id,
+        name,
+        user.email || null,
+        user.phone || null,
+        roll_number,
+        event_name,
+        location,
+        branch,
+        year,
+        outcome_of_event
+      ]
     );
 
     res.status(201).json({

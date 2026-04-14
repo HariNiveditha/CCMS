@@ -291,7 +291,7 @@ function renderEvent(event) {
             </div>
 
             <div class="event-actions">
-                <button class="btn btn-primary" onclick="registerEvent(${event.id}, '${event.title}')">Register</button>
+                <button class="btn btn-primary" onclick="registerEvent(${event.id}, '${event.title.replace(/'/g, "\\'")}')">Register</button>
             </div>
         </div>
     `;
@@ -327,55 +327,18 @@ function renderPastEvents() {
     container.innerHTML = `<div class="events-grid">${pastEvents.map(renderEvent).join('')}</div>`;
 }
 
-async function registerEvent(eventId, eventTitle) {
-    const userName = localStorage.getItem('userName');
-    const userEmail = localStorage.getItem('userEmail');
-    const userId = localStorage.getItem('userId');
+function registerEvent(eventId, eventTitle) {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    try {
-        const userRes = await fetch(`http://localhost:3000/api/auth/user/${userId}`);
-        const userData = await userRes.json();
-
-        if (!userData.success) {
-            showMessage('Please complete your profile first', 'error');
-            return;
-        }
-
-        const userPhone = userData.data?.phone;
-        const userRoll = userData.data?.roll_number;
-
-        if (!userPhone || !userRoll) {
-            showMessage('Please update your profile with phone and roll number', 'error');
-            
-            setTimeout(() => {
-                window.location.href = 'user_dashboard.html?tab=profile';
-            }, 2000);
-            return;
-        }
-
-        const res = await fetch('http://localhost:3000/api/events/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                event_id: eventId,
-                name: userName,
-                email: userEmail,
-                phone: userPhone,
-                roll_number: userRoll
-            })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            showMessage(`✅ Registered successfully for ${eventTitle}!`, 'success');
-        } else {
-            showMessage('❌ ' + data.message, 'error');
-        }
-    } catch (err) {
-        console.error('Error registering:', err);
-        showMessage('❌ Error registering', 'error');
+    if (!isLoggedIn) {
+        showMessage('❌ Please login first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
+        return;
     }
+
+    window.location.href = `event-registration.html?eventId=${eventId}&eventTitle=${encodeURIComponent(eventTitle)}`;
 }
 
 function showMessage(text, type) {
@@ -385,6 +348,8 @@ function showMessage(text, type) {
     messageEl.style.display = 'block';
 
     if (type === 'success') {
+        setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
+    } else if (type === 'error') {
         setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
     }
 }
@@ -396,6 +361,7 @@ function logout() {
 </script>
 
 </body>
+<<<<<<< HEAD
 </html>
 
 <script>
@@ -522,4 +488,6 @@ loadEvents();
 </script>
 
 </body>
+=======
+>>>>>>> 3953e1951886d319b8e54dd2bf6472beafbb826d
 </html>

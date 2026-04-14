@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Registration - CCMS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="auth.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .main-container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 30px 20px 40px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #164777;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 34px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header-copy span {
+            color: #5a7a99;
+            font-size: 0.92rem;
+        }
+
+        .header-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .header-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .club-card {
+            max-width: 760px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #164777;
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5a7a99;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .club-summary {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            border: 1px solid rgba(22, 71, 119, 0.12);
+            border-left: 5px solid #667eea;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 28px;
+        }
+
+        .club-summary h3 {
+            margin: 0 0 8px;
+            color: #164777;
+            font-size: 1.2rem;
+        }
+
+        .club-summary p {
+            color: #4f6580;
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1a2a3a;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .required {
+            color: #d32f2f;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid rgba(22, 71, 119, 0.18);
+            border-radius: 10px;
+            font-size: 0.96rem;
+            font-family: inherit;
+            background: #fff;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #164777;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.1);
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .radio-option {
+            border: 1px solid rgba(22, 71, 119, 0.18);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .radio-option:hover {
+            border-color: #164777;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.06);
+        }
+
+        .radio-option input {
+            width: auto;
+            margin: 0;
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .help-text {
+            margin-top: 8px;
+            font-size: 0.84rem;
+            color: #6f859d;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 13px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: all 0.25s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #9f2d24;
+            border: 1px solid #f3c0bb;
+        }
+
+        .message.success {
+            display: block;
+            background: #e7f7ec;
+            color: #1f6b3a;
+            border: 1px solid #bde3c9;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 18px;
+            color: #5a7a99;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            .main-container {
+                padding: 20px 14px 28px;
+            }
+
+            header {
+                padding: 22px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .club-card {
+                padding: 24px;
+            }
+
+            .form-grid,
+            .radio-group,
+            .actions {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .actions {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .title {
+                font-size: 1.55rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <div class="header-copy">
+                <h1>College Club Management System</h1>
+                <span>Club registration form</span>
+            </div>
+            <a href="clubs.html" class="header-link">Back to Clubs</a>
+        </header>
+
+        <div class="club-card">
+            <h2 class="title">Club Registration</h2>
+            <p class="subtitle">Share your details, role preference, and what you hope to contribute.</p>
+
+            <div id="message" class="message"></div>
+
+            <form id="clubForm" novalidate>
+                <div class="club-summary">
+                    <h3 id="clubName">Selected Club</h3>
+                    <p>Please review the club name above before submitting your registration.</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="full-width">
+                        <label for="name">Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="Enter your full name" autocomplete="name" required>
+                    </div>
+
+                    <div>
+                        <label for="branch">Branch <span class="required">*</span></label>
+                        <select id="branch" name="branch" required>
+                            <option value="">Select your branch</option>
+                            <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                            <option value="Electronics and Communication Engineering">Electronics and Communication Engineering</option>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+                            <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            <option value="Chemical Engineering">Chemical Engineering</option>
+                            <option value="Artificial Intelligence and Data Science">Artificial Intelligence and Data Science</option>
+                            <option value="CSM (Computer Science and Engineering - Machine Learning)">CSM (Computer Science and Engineering - Machine Learning)</option>
+                            <option value="Civil Engineering">Civil Engineering</option>
+                            <option value="Biotechnology">Biotechnology</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="rollNumber">Roll Number <span class="required">*</span></label>
+                        <input type="text" id="rollNumber" name="rollNumber" placeholder="Enter your roll number" autocomplete="off" required>
+                    </div>
+
+                    <div>
+                        <label for="year">Year <span class="required">*</span></label>
+                        <select id="year" name="year" required>
+                            <option value="">Select year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+
+                    <div class="full-width">
+                        <label>Role <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="roleCoordinator" name="role" value="Coordinator" required>
+                                <label for="roleCoordinator">Coordinator</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="roleMember" name="role" value="Member" required>
+                                <label for="roleMember">Member</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="full-width">
+                        <label for="interestGoals">Interest and Goals <span class="required">*</span></label>
+                        <textarea id="interestGoals" name="interestGoals" placeholder="Tell us why you want to join and what you hope to contribute" required></textarea>
+                        <div class="help-text">Use this space to share your interests, goals, or any relevant experience.</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Submit Registration</button>
+                    <a href="clubs.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <p class="footer-note">Your details will be reviewed by the club admin after submission.</p>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let selectedClubId = null;
+        let selectedUserId = null;
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+
+        function clearMessage() {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '';
+            messageEl.className = 'message';
+            messageEl.style.display = 'none';
+        }
+
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const branch = document.getElementById('branch').value.trim();
+            const rollNumber = document.getElementById('rollNumber').value.trim();
+            const year = document.getElementById('year').value.trim();
+            const role = document.querySelector('input[name="role"]:checked');
+            const interestGoals = document.getElementById('interestGoals').value.trim();
+
+            if (!name) return 'Please enter your name.';
+            if (!branch) return 'Please select your branch.';
+            if (!rollNumber) return 'Please enter your roll number.';
+            if (!year) return 'Please select your year.';
+            if (!role) return 'Please choose a role.';
+            if (!interestGoals) return 'Please fill in your interest and goals.';
+            if (interestGoals.length < 20) return 'Interest and goals should be at least 20 characters.';
+
+            return '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!localStorage.getItem('isLoggedIn')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            selectedClubId = params.get('clubId');
+            const clubName = params.get('clubName');
+
+            if (!selectedClubId || !clubName) {
+                showMessage('No club selected. Please go back and choose a club.', 'error');
+                document.getElementById('clubForm').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('clubName').textContent = decodeURIComponent(clubName);
+
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    selectedUserId = user.id || localStorage.getItem('userId') || null;
+                    document.getElementById('name').value = user.name || localStorage.getItem('userName') || '';
+                } catch (_) {
+                    selectedUserId = localStorage.getItem('userId');
+                    document.getElementById('name').value = localStorage.getItem('userName') || '';
+                }
+            } else {
+                selectedUserId = localStorage.getItem('userId');
+                document.getElementById('name').value = localStorage.getItem('userName') || '';
+            }
+
+            document.querySelectorAll('input[name="role"]').forEach(radio => {
+                radio.addEventListener('change', clearMessage);
+            });
+        });
+
+        document.getElementById('clubForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            clearMessage();
+
+            const errorMessage = validateForm();
+            if (errorMessage) {
+                showMessage(errorMessage, 'error');
+                return;
+            }
+
+            if (!selectedClubId || !selectedUserId) {
+                showMessage('Club or user information is missing.', 'error');
+                return;
+            }
+
+            const submitButton = document.querySelector('.btn-primary');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            const payload = {
+                userId: selectedUserId,
+                name: document.getElementById('name').value.trim(),
+                branch: document.getElementById('branch').value.trim(),
+                rollNumber: document.getElementById('rollNumber').value.trim(),
+                year: document.getElementById('year').value.trim(),
+                role: document.querySelector('input[name="role"]:checked').value,
+                interestGoals: document.getElementById('interestGoals').value.trim()
+            };
+
+            try {
+                const response = await fetch(`${API}/clubs/${selectedClubId}/request-join`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    showMessage(data.message || 'Registration failed. Please try again.', 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                    return;
+                }
+
+                showMessage('Registration submitted successfully. Redirecting to clubs...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'clubs.html';
+                }, 1800);
+            } catch (error) {
+                console.error('Club registration error:', error);
+                showMessage('Connection error. Please try again.', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>

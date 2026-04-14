@@ -61,15 +61,15 @@
 
     if (!isLoggedIn()) {
       el.innerHTML =
-        '<a href="login.html">Login</a> | <a href="signup.html">Sign Up</a>';
+        '<a href="login.html">Login</a><a href="signup.html">Sign Up</a>';
       return;
     }
 
     const adminLink = isAdmin()
-      ? '<a href="admin_dashboard.html">Admin</a> | '
+      ? '<a href="admin_dashboard.html">Admin</a>'
       : '';
     el.innerHTML =
-      '<a href="user_dashboard.html">Dashboard</a> | ' +
+      '<a href="user_dashboard.html">Dashboard</a>' +
       adminLink +
       '<a href="#" id="ccmsLogoutLink">Logout</a>';
 
@@ -91,23 +91,23 @@
 
     if (!isLoggedIn()) {
       el.innerHTML =
-        '<a href="index.html">Home</a> | ' +
-        '<a href="clubs.html">Clubs</a> | ' +
-        '<a href="events.html">Events</a> | ' +
-        '<a href="login.html">Login</a> | ' +
+        '<a href="index.html">Home</a>' +
+        '<a href="clubs.html">Clubs</a>' +
+        '<a href="events.html">Events</a>' +
+        '<a href="login.html">Login</a>' +
         '<a href="signup.html">Sign Up</a>';
       return;
     }
 
     const adminLink = isAdmin()
-      ? '<a href="admin_dashboard.html">Admin</a> | '
+      ? '<a href="admin_dashboard.html">Admin</a>'
       : '';
     el.innerHTML =
-      '<a href="index.html">Home</a> | ' +
-      '<a href="clubs.html">Clubs</a> | ' +
-      '<a href="events.html">Events</a> | ' +
+      '<a href="index.html">Home</a>' +
+      '<a href="clubs.html">Clubs</a>' +
+      '<a href="events.html">Events</a>' +
       adminLink +
-      '<a href="user_dashboard.html">Dashboard</a> | ' +
+      '<a href="user_dashboard.html">Dashboard</a>' +
       '<a href="#" id="ccmsLogoutLink2">Logout</a>';
 
     const link = el.querySelector('#ccmsLogoutLink2');

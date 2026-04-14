@@ -291,7 +291,7 @@ function renderEvent(event) {
             </div>
 
             <div class="event-actions">
-                <button class="btn btn-primary" onclick="registerEvent(${event.id}, '${event.title}')">Register</button>
+                <button class="btn btn-primary" onclick="registerEvent(${event.id}, '${event.title.replace(/'/g, "\\'")}')">Register</button>
             </div>
         </div>
     `;
@@ -327,55 +327,18 @@ function renderPastEvents() {
     container.innerHTML = `<div class="events-grid">${pastEvents.map(renderEvent).join('')}</div>`;
 }
 
-async function registerEvent(eventId, eventTitle) {
-    const userName = localStorage.getItem('userName');
-    const userEmail = localStorage.getItem('userEmail');
-    const userId = localStorage.getItem('userId');
+function registerEvent(eventId, eventTitle) {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    try {
-        const userRes = await fetch(`http://localhost:3000/api/auth/user/${userId}`);
-        const userData = await userRes.json();
-
-        if (!userData.success) {
-            showMessage('Please complete your profile first', 'error');
-            return;
-        }
-
-        const userPhone = userData.data?.phone;
-        const userRoll = userData.data?.roll_number;
-
-        if (!userPhone || !userRoll) {
-            showMessage('Please update your profile with phone and roll number', 'error');
-            
-            setTimeout(() => {
-                window.location.href = 'user_dashboard.html?tab=profile';
-            }, 2000);
-            return;
-        }
-
-        const res = await fetch('http://localhost:3000/api/events/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                event_id: eventId,
-                name: userName,
-                email: userEmail,
-                phone: userPhone,
-                roll_number: userRoll
-            })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            showMessage(`✅ Registered successfully for ${eventTitle}!`, 'success');
-        } else {
-            showMessage('❌ ' + data.message, 'error');
-        }
-    } catch (err) {
-        console.error('Error registering:', err);
-        showMessage('❌ Error registering', 'error');
+    if (!isLoggedIn) {
+        showMessage('❌ Please login first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
+        return;
     }
+
+    window.location.href = `event-registration.html?eventId=${eventId}&eventTitle=${encodeURIComponent(eventTitle)}`;
 }
 
 function showMessage(text, type) {
@@ -386,6 +349,8 @@ function showMessage(text, type) {
 
     if (type === 'success') {
         setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
+    } else if (type === 'error') {
+        setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
     }
 }
 
@@ -393,133 +358,6 @@ function logout() {
     localStorage.clear();
     window.location.href = 'index.html';
 }
-</script>
-
-</body>
-</html>
-
-<script>
-
-const API = 'http://localhost:3000/api';
-let allEvents = [];
-let currentFilter = 'all';
-
-// Fetch events from backend
-async function loadEvents() {
-    try {
-        const res = await fetch(`${API}/events`);
-        const data = await res.json();
-
-        if (!data.success) {
-            showError();
-            return;
-        }
-
-        const now = new Date();
-        allEvents = data.data.map(e => ({
-            ...e,
-            status: new Date(e.date) >= now ? 'upcoming' : 'past'
-        }));
-
-        renderEvents(currentFilter);
-
-    } catch (err) {
-        showError();
-        console.error(err);
-    }
-}
-
-function showError() {
-    document.getElementById('upcomingGrid').innerHTML =
-        '<p>Could not load events. Make sure the server is running.</p>';
-    document.getElementById('pastGrid').innerHTML = '';
-}
-
-function renderEvents(filter) {
-    const upcomingGrid = document.getElementById('upcomingGrid');
-    const pastGrid = document.getElementById('pastGrid');
-    upcomingGrid.innerHTML = '';
-    pastGrid.innerHTML = '';
-
-    const filtered = filter === 'all'
-        ? allEvents
-        : allEvents.filter(e => e.category === filter);
-
-    const upcoming = filtered.filter(e => e.status === 'upcoming');
-    const past = filtered.filter(e => e.status === 'past');
-
-    if (upcoming.length === 0) {
-        upcomingGrid.innerHTML = '<p class="no-events">No upcoming events.</p>';
-    } else {
-        upcoming.forEach(e => upcomingGrid.appendChild(createCard(e)));
-    }
-
-    if (past.length === 0) {
-        pastGrid.innerHTML = '<p class="no-events">No past events.</p>';
-    } else {
-        past.forEach(e => pastGrid.appendChild(createCard(e)));
-    }
-}
-
-function createCard(e) {
-    const isPast = e.status === 'past';
-    const eventDate = new Date(e.date);
-
-    const dateStr = eventDate.toLocaleDateString('en-IN', {
-        year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    const timeStr = eventDate.toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit'
-    });
-
-    const registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
-    const isRegistered = registeredEvents.includes(e.id);
-
-    const card = document.createElement('div');
-    card.className = 'event-card' + (isPast ? ' past-card' : '');
-
-    card.innerHTML = `
-        <div class="event-name">${e.title}</div>
-        <div class="event-club">🏛️ ${e.club_name || 'General'}</div>
-        <div class="event-meta">
-            <span>📅 ${dateStr}</span>
-            <span>🕐 ${timeStr}</span>
-            <span>📍 ${e.location || 'TBD'}</span>
-        </div>
-        <p class="event-desc">${e.description || ''}</p>
-        ${
-            isPast
-            ? `<button class="btn-past" disabled>Event Completed</button>`
-            : isRegistered
-            ? `<button class="btn-past" disabled>✓ Already Registered</button>`
-            : `<button class="btn-register" onclick="register(${e.id})">Register Now</button>`
-        }
-    `;
-
-    return card;
-}
-
-function filterEvents(category, btn) {
-    currentFilter = category;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderEvents(category);
-}
-
-// ✅ FIXED REGISTER FUNCTION
-function register(eventId) {
-    if (!window.CCMSAuth || !CCMSAuth.isLoggedIn()) {
-        alert('Please login first to register for events.');
-        window.location.href = 'login.html';
-        return;
-    }
-    window.location.href = `event-registration.html?eventId=${eventId}`;
-}
-
-CCMSAuth.renderAuthSection('authSection');
-loadEvents();
-
 </script>
 
 </body>

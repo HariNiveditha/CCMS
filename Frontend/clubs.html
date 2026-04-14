@@ -288,30 +288,19 @@ function filterClubs() {
     renderClubs();
 }
 
-async function joinClub(clubId, clubName) {
-    const userId = localStorage.getItem('userId');
+function joinClub(clubId, clubName) {
+    const userId = Number(localStorage.getItem('userId'));
 
-    try {
-        const res = await fetch(`http://localhost:3000/api/clubs/${clubId}/request-join`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            showMessage(`✅ Request sent to join ${clubName}!`, 'success');
-            setTimeout(() => {
-                window.location.href = 'user_dashboard.html';
-            }, 2000);
-        } else {
-            showMessage('❌ ' + data.message, 'error');
-        }
-    } catch (err) {
-        console.error('Error joining club:', err);
-        showMessage('❌ Error joining club', 'error');
+    if (!userId) {
+        showMessage('❌ Please login first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
+        return;
     }
+
+    // Redirect to join form with club details
+    window.location.href = `club-join.html?clubId=${clubId}&clubName=${encodeURIComponent(clubName)}`;
 }
 
 function showMessage(text, type) {
@@ -322,6 +311,8 @@ function showMessage(text, type) {
 
     if (type === 'success') {
         setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
+    } else if (type === 'error') {
+        setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
     }
 }
 

@@ -87,6 +87,7 @@ async function loadAdminClubs() {
       description: c.description || '',
       admin_id: c.admin_id,
       recruitmentOpen: Boolean(c.recruitmentOpen),
+      eventRegistrationsOpen: Boolean(c.eventRegistrationsOpen),
       members: [],
       events: Array.isArray(c.events) ? c.events : []
     }));
@@ -187,48 +188,43 @@ function renderOverview() {
   document.getElementById('statUpcoming').textContent = upcoming;
   document.getElementById('statCoords').textContent   = coords;
 
-  // Update recruitment toggle
-  const checkbox = document.getElementById('recruitmentCheckbox');
+  // Recruitment status
+  const track  = document.getElementById('toggleTrack');
   const status = document.getElementById('recruitStatus');
-  
-  checkbox.checked = club.recruitmentOpen;
-  
   if (club.recruitmentOpen) {
+    track.classList.add('active');
     status.textContent = 'OPEN';
-    status.classList.add('open');
+    status.className = 'recruit-status status-badge open';
   } else {
+    track.classList.remove('active');
     status.textContent = 'CLOSED';
-    status.classList.remove('open');
+    status.className = 'recruit-status status-badge closed';
+  }
+
+  // Event registrations status
+  const eventTrack  = document.getElementById('eventRegTrack');
+  const eventStatus = document.getElementById('eventRegStatus');
+  if (club.eventRegistrationsOpen) {
+    eventTrack.classList.add('active');
+    eventStatus.textContent = 'OPEN';
+    eventStatus.className = 'event-registrations-status status-badge open';
+  } else {
+    eventTrack.classList.remove('active');
+    eventStatus.textContent = 'CLOSED';
+    eventStatus.className = 'event-registrations-status status-badge closed';
   }
 }
 
-async function toggleRecruitment() {
-  const club = currentClub();
-  const checkbox = document.getElementById('recruitmentCheckbox');
-  const newStatus = checkbox.checked;
+function toggleRecruitment() {
+  currentClub().recruitmentOpen = !currentClub().recruitmentOpen;
+  persist();
+  renderOverview();
+}
 
-  try {
-    const response = await fetch(`http://localhost:3000/api/clubs/${club.id}/recruitment`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recruitmentOpen: newStatus })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      club.recruitmentOpen = newStatus;
-      renderOverview();
-      alert(`✅ ${data.message}`);
-    } else {
-      alert('❌ Error: ' + data.message);
-      checkbox.checked = !newStatus; // Revert checkbox
-    }
-  } catch (err) {
-    console.error('Error toggling recruitment:', err);
-    alert('Error updating recruitment status');
-    checkbox.checked = !newStatus; // Revert checkbox
-  }
+function toggleEventRegistrations() {
+  currentClub().eventRegistrationsOpen = !currentClub().eventRegistrationsOpen;
+  persist();
+  renderOverview();
 }
 
 // ── Members ───────────────────────────────────
@@ -398,7 +394,7 @@ async function loadJoinRequests() {
   if (!userId) return;
 
   try {
-    const response = await fetch(`http://localhost:3000/api/clubs/requests/admin/${userId}`);
+    const response = await fetch(`http://localhost:3000/api/admin/requests?adminId=${userId}`);
     const data = await response.json();
 
     if (data.success && Array.isArray(data.data)) {
@@ -494,10 +490,9 @@ function renderRequests() {
 
 async function approveRequest(requestId) {
   try {
-    const response = await fetch(`http://localhost:3000/api/clubs/requests/${requestId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'accepted' })
+    const response = await fetch(`http://localhost:3000/api/admin/approve/${requestId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
     });
 
     const data = await response.json();
@@ -525,10 +520,9 @@ async function rejectRequest(requestId) {
   if (!confirm('Reject this join request?')) return;
 
   try {
-    const response = await fetch(`http://localhost:3000/api/clubs/requests/${requestId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejected' })
+    const response = await fetch(`http://localhost:3000/api/admin/reject/${requestId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
     });
 
     const data = await response.json();

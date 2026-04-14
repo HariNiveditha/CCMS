@@ -8,11 +8,32 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const clubRoutes = require('./routes/clubs');
 const eventRoutes = require('./routes/events');
+const clubRegistrationRoutes = require('./routes/club-registration');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CCMS API is running',
+    endpoints: [
+      '/api/auth',
+      '/api/clubs',
+      '/api/events',
+      '/api/club-register',
+      '/api/admin/requests',
+      '/api/admin/approve/:id',
+      '/api/admin/reject/:id'
+    ]
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, status: 'ok' });
+});
 
 // ── Serve Frontend static files ───────────────────────────────────────────────
 // Access pages at: http://localhost:3000/clubs.html, /login.html etc.
@@ -42,6 +63,8 @@ db.connect((err) => {
   app.use('/api/clubs', clubRoutes);
   app.use('/api/events', eventRoutes);
 
+  app.use('/api', clubRegistrationRoutes);
+
   app.get('/', (req, res) => {
     res.send('CCMS server is running');
   });
@@ -53,3 +76,5 @@ db.connect((err) => {
 
 // Export DB if routes need it
 module.exports = db;
+// create express server
+// create middleware for error handling

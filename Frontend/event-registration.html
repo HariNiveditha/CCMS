@@ -1,363 +1,610 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Register for Event - College Club Management</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration - CCMS</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .registration-wrapper {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .main-container {
+            padding: 30px 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #164777;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #164777;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: #5a7a99;
+        }
+
+        .nav-btn,
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover,
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 28px;
+            font-size: 0.98rem;
+        }
+
+        .registration-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 34px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .card-title {
+            text-align: center;
+            color: #164777;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5a7a99;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
         }
 
         .event-summary {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            border: 1px solid rgba(22, 71, 119, 0.12);
+            border-left: 5px solid #667eea;
+            border-radius: 16px;
+            padding: 20px 22px;
+            margin-bottom: 28px;
         }
 
         .event-summary h3 {
-            margin-top: 0;
-            color: #333;
+            margin: 0 0 10px;
+            color: #164777;
+            font-size: 1.25rem;
         }
 
         .event-summary p {
             margin: 8px 0;
-            color: #666;
+            color: #4f6580;
+            line-height: 1.5;
         }
 
-        .form-group {
-            margin-bottom: 15px;
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
         }
 
-        .form-group label {
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2a3a;
+            font-size: 0.95rem;
         }
 
-        .form-group input, .form-group textarea {
+        input,
+        select,
+        textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+            padding: 12px 14px;
+            border: 1px solid rgba(22, 71, 119, 0.18);
+            border-radius: 10px;
+            font-size: 0.96rem;
+            font-family: inherit;
             box-sizing: border-box;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            background: #fff;
         }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
+        input:focus,
+        select:focus,
+        textarea:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            border-color: #164777;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.1);
         }
 
-        .form-actions {
+        input[readonly] {
+            background: #f5f7fa;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .actions {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            gap: 12px;
+            margin-top: 28px;
         }
 
-        .btn-register {
+        .btn {
             flex: 1;
-            padding: 12px 20px;
-            background: #28a745;
-            color: white;
+            padding: 13px 18px;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: all 0.25s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
             font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-register:hover {
-            background: #218838;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px 20px;
-            background: #e9ecef;
-            color: #333;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-cancel:hover {
-            background: #ddd;
-        }
-
-        .error-message {
-            color: #dc3545;
-            background: #f8d7da;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
             display: none;
         }
 
-        .success-message {
-            color: #155724;
-            background: #d4edda;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #9f2d24;
+            border: 1px solid #f3c0bb;
+        }
+
+        .message.success {
+            display: block;
+            background: #e7f7ec;
+            color: #1f6b3a;
+            border: 1px solid #bde3c9;
         }
 
         .loading {
             text-align: center;
-            color: #666;
-            font-size: 16px;
+            color: white;
+            padding: 28px 0;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #d32f2f;
+        }
+
+        @media (max-width: 640px) {
+            .main-container {
+                padding: 20px 14px 28px;
+            }
+
+            header {
+                padding: 22px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .page-title {
+                font-size: 1.6rem;
+            }
+
+            .registration-card {
+                padding: 24px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-
 <body>
+    <div class="main-container">
+        <header>
+            <h1>📅 Event Registration</h1>
+            <div class="header-right">
+                <div class="user-info">
+                    <div id="headerName" class="user-name">Student</div>
+                    <div id="headerEmail" class="user-email"></div>
+                </div>
+                <a href="events.html" class="nav-btn">Back</a>
+                <button type="button" class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
 
-<header>
-    <div class="logo">CC</div>
-    <h1>College Club Management System</h1>
-    <nav>
-        <a href="index.html">Home</a> |
-        <a href="clubs.html">Clubs</a> |
-        <a href="events.html">Events</a> |
-        <a href="members.html">Members</a> |
-        <a href="contact.html">Contact</a> |
-        <span id="authSection"></span>
-    </nav>
-</header>
+        <h2 class="page-title">Register for Event</h2>
+        <p class="page-subtitle">A clean registration form that matches the rest of CCMS</p>
 
-<div class="registration-wrapper">
-    <h2>Event Registration</h2>
+        <div class="registration-card">
+            <h2 class="card-title">Registration Details</h2>
+            <p class="subtitle">Fill in your details to register for the selected event</p>
 
-    <div id="errorMessage" class="error-message"></div>
-    <div id="successMessage" class="success-message"></div>
+            <div id="message" class="message"></div>
+            <div id="loading" class="loading">Loading event details...</div>
 
-    <div id="loadingDiv" class="loading">
-        <p>Loading event details...</p>
-    </div>
+            <div id="content" style="display:none;">
+                <div class="event-summary">
+                    <h3 id="eventTitle">Event</h3>
+                    <p><strong>Date:</strong> <span id="eventDate"></span></p>
+                    <p><strong>Location:</strong> <span id="eventLocation"></span></p>
+                    <p><strong>Club:</strong> <span id="eventClub"></span></p>
+                    <p><strong>Description:</strong> <span id="eventDescription"></span></p>
+                </div>
 
-    <div id="registrationForm" style="display: none;">
-        <!-- Event Summary -->
-        <div class="event-summary">
-            <h3 id="eventTitle">Event Title</h3>
-            <p><strong>📅 Date & Time:</strong> <span id="eventDate"></span></p>
-            <p><strong>📍 Location:</strong> <span id="eventLocation"></span></p>
-            <p><strong>🏛️ Club:</strong> <span id="eventClub"></span></p>
-            <p><strong>Description:</strong> <span id="eventDesc"></span></p>
+                <form id="registrationForm">
+                    <div class="form-grid">
+                        <div>
+                            <label for="name">Name <span class="required">*</span></label>
+                            <input type="text" id="name" required placeholder="Enter your name">
+                        </div>
+                        <div>
+                            <label for="rollNumber">Roll No <span class="required">*</span></label>
+                            <input type="text" id="rollNumber" required placeholder="Enter your roll number">
+                        </div>
+                        <div>
+                            <label for="eventNameInput">Event Name <span class="required">*</span></label>
+                            <input type="text" id="eventNameInput" readonly required>
+                        </div>
+                        <div>
+                            <label for="locationInput">Location <span class="required">*</span></label>
+                            <input type="text" id="locationInput" readonly required>
+                        </div>
+                        <div>
+                            <label for="branch">Branch <span class="required">*</span></label>
+                            <select id="branch" required>
+                                <option value="">Select branch</option>
+                                <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                                <option value="Electronics and Communication Engineering">Electronics and Communication Engineering</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Chemical Engineering">Chemical Engineering</option>
+                                <option value="Artificial Intelligence and Data Science">Artificial Intelligence and Data Science</option>
+                                <option value="CSM (Computer Science and Engineering - Machine Learning)">CSM (Computer Science and Engineering - Machine Learning)</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                                <option value="Biotechnology">Biotechnology</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="year">Year <span class="required">*</span></label>
+                            <select id="year" required>
+                                <option value="">Select year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="full-width">
+                            <label for="eventOutcome">Outcome of the Event <span class="required">*</span></label>
+                            <textarea id="eventOutcome" placeholder="Describe your expected outcome, learning goals, and impact from attending this event" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <!-- Registration Form -->
-        <form id="regForm">
-            <div class="form-group">
-                <label for="name">Full Name *</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="phone">Phone Number *</label>
-                <input type="tel" id="phone" name="phone" required>
-            </div>
-
-            <div class="form-group">
-                <label for="rollNumber">Roll Number *</label>
-                <input type="text" id="rollNumber" name="rollNumber" required>
-            </div>
-
-            <div class="form-group">
-                <label for="specialRequirements">Special Requirements or Comments</label>
-                <textarea id="specialRequirements" name="specialRequirements" placeholder="Any dietary restrictions, accessibility needs, or other requirements?"></textarea>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn-register">Confirm Registration</button>
-                <button type="button" class="btn-cancel" onclick="history.back()">Cancel</button>
-            </div>
-        </form>
     </div>
-</div>
 
-<footer>
-    <p>© 2026 College Club Management System</p>
-</footer>
+    <script>
+        const API = 'http://localhost:3000/api';
+        let eventId = null;
+        let userId = null;
 
-<script>
-
-const API = 'http://localhost:3000/api';
-let eventId = null;
-let userInfo = null;
-
-// Get event ID from URL parameter
-function getEventIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('eventId');
-}
-
-async function loadEventDetails() {
-    try {
-        eventId = getEventIdFromURL();
-
-        if (!eventId) {
-            showError('Event ID not provided');
-            return;
+        function getParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                eventId: params.get('eventId'),
+                eventTitle: params.get('eventTitle')
+            };
         }
 
-        const res = await fetch(`${API}/events/${eventId}`);
-        const data = await res.json();
-
-        if (!data.success) {
-            showError('Event not found');
-            return;
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
         }
 
-        const event = data.data;
+        function formatEventDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value || 'TBD';
+            }
 
-        document.getElementById('eventTitle').textContent = event.title;
-        const eventDate = new Date(event.date);
-        const dateStr = eventDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
-        const timeStr = eventDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('eventDate').textContent = `${dateStr} at ${timeStr}`;
-        document.getElementById('eventLocation').textContent = event.location || 'TBD';
-        document.getElementById('eventClub').textContent = event.club_name || 'General';
-        document.getElementById('eventDesc').textContent = event.description || 'No description provided';
-
-        const storedUser = localStorage.getItem('userInfo');
-        if (storedUser) {
-            userInfo = JSON.parse(storedUser);
-            document.getElementById('name').value = userInfo.name || '';
-            document.getElementById('email').value = userInfo.email || '';
-            document.getElementById('phone').value = userInfo.phone || '';
-            document.getElementById('rollNumber').value = userInfo.roll_number || '';
+            const dateStr = date.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            return `${dateStr} at ${timeStr}`;
         }
 
-        document.getElementById('loadingDiv').style.display = 'none';
-        document.getElementById('registrationForm').style.display = 'block';
+        async function loadEvent() {
+            const params = getParams();
+            eventId = params.eventId;
+            userId = localStorage.getItem('userId');
 
-    } catch (err) {
-        showError('Error loading event details');
-        console.error(err);
-    }
-}
+            if (!localStorage.getItem('isLoggedIn')) {
+                window.location.href = 'login.html';
+                return;
+            }
 
-function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorMessage').style.display = 'block';
-    document.getElementById('loadingDiv').style.display = 'none';
-}
+            document.getElementById('headerName').textContent = localStorage.getItem('userName') || 'Student';
+            document.getElementById('headerEmail').textContent = localStorage.getItem('userEmail') || '';
 
-function showSuccess(message) {
-    document.getElementById('successMessage').textContent = message;
-    document.getElementById('successMessage').style.display = 'block';
-    setTimeout(() => {
-        window.location.href = 'events.html';
-    }, 2000);
-}
+            if (!eventId) {
+                showMessage('Event ID not provided', 'error');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
 
-document.getElementById('regForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+            if (!userId) {
+                showMessage('Please log in again to continue', 'error');
+                document.getElementById('loading').style.display = 'none';
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
 
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const rollNumber = document.getElementById('rollNumber').value.trim();
-    const specialRequirements = document.getElementById('specialRequirements').value.trim();
+            try {
+                const [eventRes, userRes] = await Promise.all([
+                    fetch(`${API}/events/${eventId}`),
+                    fetch(`${API}/auth/user/${userId}`)
+                ]);
 
-    if (!name || !email || !phone || !rollNumber) {
-        showError('Please fill in all required fields');
-        return;
-    }
+                const eventData = await eventRes.json();
+                const userData = await userRes.json();
 
-    try {
-        const regBtn = document.querySelector('.btn-register');
-        regBtn.disabled = true;
-        regBtn.textContent = 'Registering...';
+                if (!eventData.success) {
+                    showMessage('Event not found', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
 
-        const res = await fetch(`${API}/events/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                event_id: eventId,
-                name,
-                email,
-                phone,
-                roll_number: rollNumber,
-                special_requirements: specialRequirements
-            })
+                if (!userData.success) {
+                    showMessage('Unable to load your profile details', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                const event = eventData.data;
+                const user = userData.data || {};
+
+                document.getElementById('eventTitle').textContent = event.title || params.eventTitle || 'Event';
+                document.getElementById('eventDate').textContent = formatEventDate(event.date);
+                document.getElementById('eventLocation').textContent = event.location || 'TBD';
+                document.getElementById('eventClub').textContent = event.club_name || 'General';
+                document.getElementById('eventDescription').textContent = event.description || 'No description provided';
+                document.getElementById('eventNameInput').value = event.title || params.eventTitle || '';
+                document.getElementById('locationInput').value = event.location || 'TBD';
+
+                document.getElementById('name').value = user.name || localStorage.getItem('userName') || '';
+                document.getElementById('rollNumber').value = user.roll_number || '';
+                document.getElementById('branch').value = user.branch || '';
+                document.getElementById('year').value = user.year || '';
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                showMessage('Error loading registration page', 'error');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const rollNumber = document.getElementById('rollNumber').value.trim();
+            const eventName = document.getElementById('eventNameInput').value.trim();
+            const location = document.getElementById('locationInput').value.trim();
+            const branch = document.getElementById('branch').value.trim();
+            const year = document.getElementById('year').value.trim();
+            const eventOutcome = document.getElementById('eventOutcome').value.trim();
+
+            if (!name || !rollNumber || !eventName || !location || !branch || !year || !eventOutcome) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (eventOutcome.length < 15) {
+                showMessage('Outcome of the event should be at least 15 characters.', 'error');
+                return;
+            }
+
+            const submitButton = document.querySelector('.btn-primary');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Registering...';
+
+            try {
+                const response = await fetch(`${API}/events/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_id: eventId,
+                        user_id: userId,
+                        name,
+                        roll_number: rollNumber,
+                        event_name: eventName,
+                        location,
+                        branch,
+                        year,
+                        outcome_of_event: eventOutcome
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    showMessage(data.message || 'Registration failed', 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                    return;
+                }
+
+                showMessage('Registration successful. Redirecting to events...', 'success');
+                submitButton.textContent = 'Registered';
+                setTimeout(() => {
+                    window.location.href = 'events.html';
+                }, 1800);
+            } catch (error) {
+                console.error(error);
+                showMessage('Error submitting registration', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
         });
 
-        const data = await res.json();
-
-        if (!data.success) {
-            showError(data.message || 'Registration failed');
-            regBtn.disabled = false;
-            regBtn.textContent = 'Confirm Registration';
-            return;
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
         }
 
-        let registeredEvents = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
-        if (!registeredEvents.includes(eventId)) {
-            registeredEvents.push(parseInt(eventId));
-            localStorage.setItem('registeredEvents', JSON.stringify(registeredEv
-            ents));
-        }
-
-        regBtn.textContent = '✓ Registered!';
-        regBtn.style.background = '#6c757d';
-        showSuccess('Registration successful! Redirecting to events...');
-
-    } catch (err) {
-        showError('Error submitting registration');
-        console.error(err);
-        const regBtn = document.querySelector('.btn-register');
-        regBtn.disabled = false;
-        regBtn.textContent = 'Confirm Registration';
-    }
-});
-
-const authSection = document.getElementById('authSection');
-const isLoggedIn = localStorage.getItem('isLoggedIn');
-if (isLoggedIn) {
-    authSection.innerHTML = `<a href="user_dashboard.html">Dashboard</a> | <a href="#" onclick="logout()">Logout</a>`;
-} else {
-    // Redirect to login if not logged in
-    document.getElementById('loadingDiv').innerHTML = '<p>Please log in to register for events. Redirecting...</p>';
-    setTimeout(() => {
-        window.location.href = 'login.html';
-    }, 2000);
-}
-
-function logout() {
-    localStorage.clear();
-    window.location.href = 'index.html';
-}
-
-loadEventDetails();
-
-</script>
-
+        loadEvent();
+    </script>
 </body>
 </html>

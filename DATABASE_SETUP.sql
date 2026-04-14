@@ -116,6 +116,12 @@ CREATE TABLE IF NOT EXISTS join_requests (
   id INT PRIMARY KEY AUTO_INCREMENT,
   club_id INT NOT NULL,
   user_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  branch VARCHAR(100) NOT NULL,
+  roll_number VARCHAR(50) NOT NULL,
+  year VARCHAR(20) NOT NULL,
+  role ENUM('Coordinator', 'Member') NOT NULL,
+  interest_goals TEXT NOT NULL,
   status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
   requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   reviewed_at TIMESTAMP NULL,
@@ -134,3 +140,38 @@ DESC join_requests;
 DESC users;
 DESC clubs;
 DESC club_members;
+
+-- ═══════════════════════════════════════════════════════════════
+-- Step 12: Create or update event registrations table
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS event_registrations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  event_id INT NOT NULL,
+  user_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(20),
+  roll_number VARCHAR(50) NOT NULL,
+  event_name VARCHAR(255) NOT NULL,
+  event_location VARCHAR(255) NOT NULL,
+  branch VARCHAR(100) NOT NULL,
+  year VARCHAR(20) NOT NULL,
+  outcome_of_event TEXT NOT NULL,
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_event_user (event_id, user_id),
+  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_event_id (event_id),
+  INDEX idx_user_id (user_id)
+);
+
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS user_id INT;
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS event_name VARCHAR(255);
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS event_location VARCHAR(255);
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS branch VARCHAR(100);
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS year VARCHAR(20);
+ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS outcome_of_event TEXT;
+
+DESC event_registrations;

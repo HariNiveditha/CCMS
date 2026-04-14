@@ -699,100 +699,113 @@ td.empty {
 }
 
 /* ═══════════════════════════════════════════════ */
-/* RECRUITMENT BANNER */
+/* BANNERS */
 /* ═══════════════════════════════════════════════ */
-.recruit-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.recruit-banner,
+.event-registrations-banner {
+  background: var(--surface);
   border-radius: var(--radius-lg);
-  padding: 2rem;
-  color: white;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
 }
 
-.recruit-banner .info-block {
+.recruit-banner .info-block,
+.event-registrations-banner .info-block {
   flex: 1;
 }
 
-.recruit-banner .title {
-  font-size: 1.3rem;
+.recruit-banner .title,
+.event-registrations-banner .title {
+  font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
 }
 
-.recruit-banner .desc {
-  font-size: 0.95rem;
-  opacity: 0.95;
+.recruit-banner .desc,
+.event-registrations-banner .desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .toggle-pill {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
+  margin-left: 2rem;
 }
 
-.recruit-status {
-  font-weight: 700;
-  font-size: 1.1rem;
+.status-badge {
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   min-width: 80px;
   text-align: center;
 }
 
-.recruit-status.open {
-  background: rgba(26,122,74,0.3);
-  color: #90EE90;
+.status-badge.open {
+  background: var(--success-dim);
+  color: var(--success);
 }
 
-/* ═══════════════════════════════════════════════ */
-/* TOGGLE SWITCH */
-/* ═══════════════════════════════════════════════ */
-.toggle-switch {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-  margin-right: 1rem;
+.status-badge.closed {
+  background: var(--danger-dim);
+  color: var(--danger);
 }
 
-.toggle-switch input {
-  display: none;
-}
-
-.toggle-slider {
+.recruit-status,
+.event-registrations-status {
   display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  min-width: 80px;
+  text-align: center;
+}
+
+.toggle-track {
   width: 50px;
   height: 28px;
-  background: #ccc;
+  background: var(--border);
   border-radius: 14px;
+  cursor: pointer;
   position: relative;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
-.toggle-slider::before {
+.toggle-track::after {
   content: '';
   position: absolute;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
   background: white;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border-radius: 12px;
+  top: 0;
+  left: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.toggle-switch input:checked + .toggle-slider {
+.toggle-track.active {
   background: var(--success);
+  border-color: var(--success);
 }
 
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(22px);
+.toggle-track.active::after {
+  left: 22px;
 }
 
 /* ═══════════════════════════════════════════════ */

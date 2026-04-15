@@ -1,13 +1,18 @@
 # Dependencies
 node_modules/
 
-# Environment / secrets
+# Environment files
 .env
 .env.local
 .env.*.local
-*.env
 
-# OS/editor
+# Logs
+logs
+*.log
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# Editor folders
 .vscode/

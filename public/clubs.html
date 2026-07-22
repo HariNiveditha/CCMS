@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Browse Clubs</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navigation.css">
+    <script src="navigation.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            font-family: 'Montserrat', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            background: #164777;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .back-btn, .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            color: #164777;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .clubs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .club-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .club-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .club-card h3 {
+            color: #164777;
+            margin: 0 0 12px 0;
+            font-size: 1.3rem;
+        }
+
+        .club-card p {
+            color: #5a7a99;
+            margin: 8px 0;
+            font-size: 0.9rem;
+            flex-grow: 1;
+        }
+
+        .club-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .club-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #164777;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f2e4a;
+        }
+
+        .btn-secondary {
+            background: #e8f4fb;
+            color: #164777;
+            border: 1px solid #164777;
+        }
+
+        .btn-secondary:hover {
+            background: #d0e8f8;
+        }
+
+        .btn-disabled,
+        .btn:disabled {
+            background: #cfd8e3 !important;
+            color: #6b7c93 !important;
+            cursor: not-allowed;
+            border: 1px solid #b9c7d8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5a7a99;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(26, 122, 74, 0.1);
+            color: #1a7a4a;
+            border: 1px solid #1a7a4a;
+        }
+
+        .message.error {
+            background: rgba(192, 57, 43, 0.1);
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        .search-box {
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 15px;
+            border: 2px solid #164777;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5a7a99;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="global-nav"></nav>
+
+<header>
+    <h1>🏛️ Browse Clubs</h1>
+    <div class="header-right">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderNavigation();
+});
+</script>
+
+<div class="container">
+    <div id="message" class="message"></div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search clubs by name..." onkeyup="filterClubs()">
+    </div>
+
+    <h2 class="page-title">All Clubs</h2>
+
+    <div id="clubsList" class="loading">Loading clubs...</div>
+</div>
+
+<script>
+let allClubs = [];
+let filteredClubs = [];
+
+function isToggleEnabled(row, camelKey, snakeKey) {
+    const raw = row && row[camelKey] !== undefined
+        ? row[camelKey]
+        : row && row[snakeKey] !== undefined
+            ? row[snakeKey]
+            : null;
+
+    if (raw === null || raw === undefined) return false;
+    if (typeof raw === 'boolean') return raw;
+    if (typeof raw === 'number') return raw === 1;
+    const normalized = String(raw).trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'open';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    loadClubs();
+});
+
+async function loadClubs() {
+    try {
+        const res = await fetch('http://localhost:3000/api/clubs');
+        const data = await res.json();
+
+        if (data.success) {
+            allClubs = data.data || [];
+            filteredClubs = allClubs;
+            renderClubs();
+        } else {
+            showMessage('Error loading clubs', 'error');
+        }
+    } catch (err) {
+        console.error('Error loading clubs:', err);
+        showMessage('Connection error', 'error');
+    }
+}
+
+function renderClubs() {
+    const container = document.getElementById('clubsList');
+
+    if (filteredClubs.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🏢</div>
+                <p>No clubs found.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="clubs-grid">
+            ${filteredClubs.map(club => `
+                ${(() => {
+                    const recruitmentOpen = isToggleEnabled(club, 'recruitmentOpen', 'recruitment_open');
+                    const buttonText = recruitmentOpen ? 'Join Club' : 'Recruitment Closed';
+                    const disabledAttr = recruitmentOpen ? '' : 'disabled';
+                    const disabledClass = recruitmentOpen ? '' : 'btn-disabled';
+                    return `
+                <div class="club-card">
+                    <div class="club-icon">🎓</div>
+                    <h3>${club.name}</h3>
+                    <p>${club.description || 'No description available'}</p>
+                    <div class="club-actions">
+                        <button class="btn btn-primary ${disabledClass}" ${disabledAttr} onclick="joinClub(${club.id}, '${club.name.replace(/'/g, "\\'")}', ${recruitmentOpen})">${buttonText}</button>
+                    </div>
+                </div>
+                    `;
+                })()}
+            `).join('')}
+        </div>`;
+}
+
+function filterClubs() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    filteredClubs = allClubs.filter(club =>
+        club.name.toLowerCase().includes(searchTerm) ||
+        (club.description && club.description.toLowerCase().includes(searchTerm))
+    );
+    renderClubs();
+}
+
+function joinClub(clubId, clubName, recruitmentOpen) {
+    if (!recruitmentOpen) {
+        showMessage('Recruitment is currently closed for this club.', 'error');
+        return;
+    }
+
+    const userId = Number(localStorage.getItem('userId'));
+
+    if (!userId) {
+        showMessage('❌ Please login first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
+        return;
+    }
+
+    // Redirect to join form with club details
+    window.location.href = `club-join.html?clubId=${clubId}&clubName=${encodeURIComponent(clubName)}`;
+}
+
+function showMessage(text, type) {
+    const messageEl = document.getElementById('message');
+    messageEl.textContent = text;
+    messageEl.className = `message ${type}`;
+    messageEl.style.display = 'block';
+
+    if (type === 'success') {
+        setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
+    } else if (type === 'error') {
+        setTimeout(() => { messageEl.style.display = 'none'; }, 4000);
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+</script>
+
+</body>
+</html>
+</html>

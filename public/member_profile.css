@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #6B46C1;
+  --secondary: #3B82F6;
+  --accent: #EC4899;
+  --accent-alt: #F59E0B;
+  --success: #10B981;
+  --danger: #F87171;
+  --bg: linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 35%, #E0C3FC 100%);
+  --surface: #ffffff;
+  --text: #1E293B;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --border: rgba(100, 116, 139, 0.12);
+  --border-light: rgba(148, 163, 184, 0.2);
+  --shadow: 0 10px 30px rgba(107, 70, 193, 0.12);
+  --shadow-lg: 0 20px 40px rgba(107, 70, 193, 0.15);
+  --shadow-sm: 0 4px 12px rgba(107, 70, 193, 0.08);
+}
+
+body {
+  font-family: 'Poppins', 'Nunito', sans-serif;
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  font-weight: 500;
+}
+
+/* ── AUTH GATE ── */
+#authGate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+#authGate h2 {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#authGate p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+#authGate a {
+  color: white;
+  text-decoration: none;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  font-weight: 600;
+}
+
+#authGate a:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* ── NAVBAR ── */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-bottom: 1px solid var(--border-light);
+  padding: 1.2rem 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-link {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.back-link:hover {
+  color: var(--accent-alt);
+  transform: translateX(-2px);
+}
+
+.navbar-title {
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.logout-link {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  padding: 0.6rem 1.2rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: 600;
+}
+
+.logout-link:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  transform: translateY(-2px);
+}
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  padding: 2.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border-light);
+  margin-bottom: 2rem;
+}
+
+.profile-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.profile-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  background: rgba(107, 70, 193, 0.05);
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── SECTIONS ── */
+.section {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border-light);
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 3px solid var(--accent-alt);
+}
+
+/* ── FORM ELEMENTS ── */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  font-family: 'Poppins', 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: all 0.3s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-light);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.1), 0 4px 12px rgba(107, 70, 193, 0.15);
+  transform: translateY(-1px);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 0.8rem 1.8rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', 'Nunito', sans-serif;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.2);
+  transition: left 0.5s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 70, 193, 0.3);
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-secondary {
+  background: rgba(107, 70, 193, 0.1);
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(107, 70, 193, 0.2);
+}
+
+/* ── LISTS ── */
+.member-list,
+.club-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.member-card,
+.club-card-item {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.member-card:hover,
+.club-card-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: rgba(107, 70, 193, 0.3);
+}
+
+.member-name,
+.club-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.member-role,
+.member-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+/* ── MESSAGES ── */
+.message {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.08));
+  color: #047857;
+  border-left: 4px solid var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-left: 4px solid var(--success);
+}
+
+.message.error {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(220, 38, 38, 0.08));
+  color: #7F1D1D;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-left: 4px solid var(--danger);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-content {
+    padding: 1.5rem;
+  }
+
+  .profile-title {
+    font-size: 1.4rem;
+  }
+
+  .member-list,
+  .club-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration - CCMS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navigation.css">
+    <script src="navigation.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .main-container {
+            padding: 30px 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #164777;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #164777;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: #5a7a99;
+        }
+
+        .nav-btn,
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover,
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 28px;
+            font-size: 0.98rem;
+        }
+
+        .registration-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 34px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .card-title {
+            text-align: center;
+            color: #164777;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5a7a99;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        .event-summary {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            border: 1px solid rgba(22, 71, 119, 0.12);
+            border-left: 5px solid #667eea;
+            border-radius: 16px;
+            padding: 20px 22px;
+            margin-bottom: 28px;
+        }
+
+        .event-summary h3 {
+            margin: 0 0 10px;
+            color: #164777;
+            font-size: 1.25rem;
+        }
+
+        .event-summary p {
+            margin: 8px 0;
+            color: #4f6580;
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2a3a;
+            font-size: 0.95rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(22, 71, 119, 0.18);
+            border-radius: 10px;
+            font-size: 0.96rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #164777;
+            box-shadow: 0 0 0 3px rgba(22, 71, 119, 0.1);
+        }
+
+        input[readonly] {
+            background: #f5f7fa;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 13px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.98rem;
+            transition: all 0.25s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #9f2d24;
+            border: 1px solid #f3c0bb;
+        }
+
+        .message.success {
+            display: block;
+            background: #e7f7ec;
+            color: #1f6b3a;
+            border: 1px solid #bde3c9;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 28px 0;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #d32f2f;
+        }
+
+        @media (max-width: 640px) {
+            .main-container {
+                padding: 20px 14px 28px;
+            }
+
+            header {
+                padding: 22px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .page-title {
+                font-size: 1.6rem;
+            }
+
+            .registration-card {
+                padding: 24px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="global-nav"></nav>
+    
+    <div class="main-container">
+        <header>
+            <h1>📅 Event Registration</h1>
+            <div class="header-right">
+                <div class="user-info">
+                    <div id="headerName" class="user-name">Student</div>
+                    <div id="headerEmail" class="user-email"></div>
+                </div>
+                <button type="button" class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            renderNavigation();
+        });
+        </script>
+
+        <h2 class="page-title">Register for Event</h2>
+        <p class="page-subtitle">A clean registration form that matches the rest of CCMS</p>
+
+        <div class="registration-card">
+            <h2 class="card-title">Registration Details</h2>
+            <p class="subtitle">Fill in your details to register for the selected event</p>
+
+            <div id="message" class="message"></div>
+            <div id="loading" class="loading">Loading event details...</div>
+
+            <div id="content" style="display:none;">
+                <div class="event-summary">
+                    <h3 id="eventTitle">Event</h3>
+                    <p><strong>Date:</strong> <span id="eventDate"></span></p>
+                    <p><strong>Location:</strong> <span id="eventLocation"></span></p>
+                    <p><strong>Club:</strong> <span id="eventClub"></span></p>
+                    <p><strong>Description:</strong> <span id="eventDescription"></span></p>
+                </div>
+
+                <form id="registrationForm">
+                    <div class="form-grid">
+                        <div>
+                            <label for="name">Name <span class="required">*</span></label>
+                            <input type="text" id="name" required placeholder="Enter your name">
+                        </div>
+                        <div>
+                            <label for="rollNumber">Roll No <span class="required">*</span></label>
+                            <input type="text" id="rollNumber" required placeholder="Enter your roll number">
+                        </div>
+                        <div>
+                            <label for="eventNameInput">Event Name <span class="required">*</span></label>
+                            <input type="text" id="eventNameInput" readonly required>
+                        </div>
+                        <div>
+                            <label for="locationInput">Location <span class="required">*</span></label>
+                            <input type="text" id="locationInput" readonly required>
+                        </div>
+                        <div>
+                            <label for="branch">Branch <span class="required">*</span></label>
+                            <select id="branch" required>
+                                <option value="">Select branch</option>
+                                <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                                <option value="Electronics and Communication Engineering">Electronics and Communication Engineering</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Chemical Engineering">Chemical Engineering</option>
+                                <option value="Artificial Intelligence and Data Science">Artificial Intelligence and Data Science</option>
+                                <option value="CSM (Computer Science and Engineering - Machine Learning)">CSM (Computer Science and Engineering - Machine Learning)</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                                <option value="Biotechnology">Biotechnology</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="year">Year <span class="required">*</span></label>
+                            <select id="year" required>
+                                <option value="">Select year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="full-width">
+                            <label for="eventOutcome">Special Requirements / Notes <span class="required">*</span></label>
+                            <textarea id="eventOutcome" placeholder="Add any special requirements or notes for the event" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let eventId = null;
+        let userId = null;
+        let userEmail = '';
+        let userPhone = '';
+        let eventRegistrationOpen = false;
+
+        function isToggleEnabled(row, camelKey, snakeKey) {
+            const raw = row && row[camelKey] !== undefined
+                ? row[camelKey]
+                : row && row[snakeKey] !== undefined
+                    ? row[snakeKey]
+                    : null;
+
+            if (raw === null || raw === undefined) return false;
+            if (typeof raw === 'boolean') return raw;
+            if (typeof raw === 'number') return raw === 1;
+            const normalized = String(raw).trim().toLowerCase();
+            return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'open';
+        }
+
+        function getParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                eventId: params.get('eventId'),
+                eventTitle: params.get('eventTitle')
+            };
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+
+        function formatEventDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value || 'TBD';
+            }
+
+            const dateStr = date.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            return `${dateStr} at ${timeStr}`;
+        }
+
+        async function loadEvent() {
+            const params = getParams();
+            eventId = params.eventId;
+            userId = localStorage.getItem('userId');
+
+            if (!localStorage.getItem('isLoggedIn')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('headerName').textContent = localStorage.getItem('userName') || 'Student';
+            document.getElementById('headerEmail').textContent = localStorage.getItem('userEmail') || '';
+
+            if (!eventId) {
+                showMessage('Event ID not provided', 'error');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
+            if (!userId) {
+                showMessage('Please log in again to continue', 'error');
+                document.getElementById('loading').style.display = 'none';
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
+
+            try {
+                const [eventRes, userRes] = await Promise.all([
+                    fetch(`${API}/events/${eventId}`),
+                    fetch(`${API}/auth/user/${userId}`)
+                ]);
+
+                const eventData = await eventRes.json();
+                const userData = await userRes.json();
+
+                if (!eventData.success) {
+                    showMessage('Event not found', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                if (!userData.success) {
+                    showMessage('Unable to load your profile details', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                const event = eventData.data;
+                const user = userData.data || {};
+                userEmail = user.email || localStorage.getItem('userEmail') || '';
+                userPhone = user.phone || '';
+                eventRegistrationOpen = isToggleEnabled(event, 'eventRegistrationsOpen', 'event_registrations_open');
+
+                document.getElementById('eventTitle').textContent = event.title || params.eventTitle || 'Event';
+                document.getElementById('eventDate').textContent = formatEventDate(event.date);
+                document.getElementById('eventLocation').textContent = event.location || 'TBD';
+                document.getElementById('eventClub').textContent = event.club_name || 'General';
+                document.getElementById('eventDescription').textContent = event.description || 'No description provided';
+                document.getElementById('eventNameInput').value = event.title || params.eventTitle || '';
+                document.getElementById('locationInput').value = event.location || 'TBD';
+
+                if (!eventRegistrationOpen) {
+                    showMessage('Event registrations are currently closed for this club.', 'error');
+                    document.getElementById('registrationForm').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('name').value = user.name || localStorage.getItem('userName') || '';
+                document.getElementById('rollNumber').value = user.roll_number || '';
+                document.getElementById('branch').value = user.branch || '';
+                document.getElementById('year').value = user.year || '';
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                showMessage('Error loading registration page', 'error');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (!eventRegistrationOpen) {
+                showMessage('Event registrations are currently closed for this club.', 'error');
+                return;
+            }
+
+            const name = document.getElementById('name').value.trim();
+            const rollNumber = document.getElementById('rollNumber').value.trim();
+            const eventName = document.getElementById('eventNameInput').value.trim();
+            const location = document.getElementById('locationInput').value.trim();
+            const branch = document.getElementById('branch').value.trim();
+            const year = document.getElementById('year').value.trim();
+            const eventOutcome = document.getElementById('eventOutcome').value.trim();
+
+            if (!name || !rollNumber || !eventName || !location || !branch || !year || !eventOutcome) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (eventOutcome.length < 15) {
+                showMessage('Outcome of the event should be at least 15 characters.', 'error');
+                return;
+            }
+
+            const submitButton = document.querySelector('.btn-primary');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Registering...';
+
+            try {
+                const response = await fetch(`${API}/events/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_id: eventId,
+                        user_id: userId,
+                        name,
+                        email: userEmail,
+                        phone: userPhone,
+                        roll_number: rollNumber,
+                        special_requirements: eventOutcome
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    showMessage(data.message || 'Registration failed', 'error');
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                    return;
+                }
+
+                showMessage('Registration successful. Redirecting to events...', 'success');
+                submitButton.textContent = 'Registered';
+                setTimeout(() => {
+                    window.location.href = 'events.html';
+                }, 1800);
+            } catch (error) {
+                console.error(error);
+                showMessage('Error submitting registration', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        loadEvent();
+    </script>
+</body>
+</html>

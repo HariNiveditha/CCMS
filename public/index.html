@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>College Club Management</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="auth.js"></script>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">CC</div>
+    <h1>College Club Management System</h1>
+    <span id="authSection"></span>
+</header>
+
+<hr>
+
+<section class="intro">
+    <h2>Welcome to Club Portal</h2>
+    <p>This platform helps students explore clubs, participate in events, and manage activities easily.</p>
+</section>
+
+<section>
+    <h2>Features</h2>
+    <div class="feature-container">
+        <div class="feature-card" onclick="goTo('clubs.html')">
+            <h3>Clubs</h3>
+            <p>Explore all available college clubs.</p>
+        </div>
+        <div class="feature-card" onclick="goTo('events.html')">
+            <h3>Events</h3>
+            <p>Register and participate in events.</p>
+        </div>
+        <div class="feature-card" onclick="goTo('user_dashboard.html')">
+            <h3>Dashboard</h3>
+            <p>View your clubs and registration status.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Admin Panel Card — only shown when userRole === 'admin' -->
+<section id="adminFeatureSection" style="display:none;">
+    <div class="feature-container">
+        <div class="feature-card" style="border: 2px solid #c0392b;" onclick="goTo('admin_dashboard.html')">
+            <h3>⚙️ Admin Dashboard</h3>
+            <p>Manage your clubs, members, events and recruitments.</p>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Upcoming Events</h2>
+    <p>No upcoming events at the moment.</p>
+</section>
+
+<hr>
+
+<footer>
+    <p>© 2026 College Club Management System</p>
+</footer>
+
+<script>
+    const adminFeatureSection = document.getElementById('adminFeatureSection');
+
+    CCMSAuth.renderAuthSection('authSection');
+
+    if (CCMSAuth.isLoggedIn() && CCMSAuth.isAdmin()) {
+        adminFeatureSection.style.display = 'block';
+    }
+
+    function goTo(page) {
+        window.location.href = page;
+    }
+</script>
+
+</body>
+</html>
